@@ -24,11 +24,59 @@
 {% block nav %}
 <nav>
   <ul>
-    <li><a href="{{url_for('index')}}">Home</a></li>
-    <li><a href="{{url_for('insert')}}">Insert a Movie</a></li>
-    <li><a href="{{url_for('select')}}">Select from Incomplete Movies</a></li>
+    <li><a href="{{url_for('home')}}">Home</a></li>
   </ul>
 </nav>
+{% endblock %}
+
+{% block form %}
+<section id="filter" class="col-xs-12 col-sm-3 col-md-3 col-lg-3 pull-left">
+  <form method="post" name="filters" action="{{url_for('home')}}">
+      <div id="filters">
+          <div class=filter_title>
+              Filters
+          </div>
+          <div></div>
+          <div class="row">
+            <div class="formlabel" style="font-weight:bold;">Department</div>
+            <div class="formsection">
+                <select id="department" class="w-select filter_selecter" name="department" ">
+                  {% for dept in departments %}
+                    <option value={{ dept.abbrv }}>{{ dept.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+          </div>
+          <div></div>
+          <div class="row">
+              <div class="formlabel" style="font-weight:bold;">Professor</div>
+
+              <div class="formsection">
+                  <select id="professor" class="w-select filter_selecter" name="professor">
+                  {% for prof in professors %}
+                    <option value={{ prof.pid }}>{{ prof.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+          </div>
+          <div></div>
+          <div class="row">
+              <div class="formlabel" style="font-weight:bold;">Course</div>
+
+              <div class="formsection">
+                  <select id="course" class="w-select filter_selecter" name="course">
+                  {% for course in courses %}
+                    <option value={{ course.courseid }}>{{ course.code }}: {{ course.title }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div></div>
+                  <div class="formsection">
+                    <input name="submit" data-wait="Please wait..." type="submit" value="Search" class="w-button submit_button"/>
+                </div>
+            </div>
+      </form>
+</div>
 {% endblock %}
 
 {% block page_title %}

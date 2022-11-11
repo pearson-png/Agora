@@ -8,8 +8,9 @@ app = Flask(__name__)
 
 import cs304dbi as dbi
 # import cs304dbi_sqlite3 as dbi
-# DENIZ WAS HERE
+
 import random
+import queries
 
 app.secret_key = 'your secret here'
 # replace that with a random key
@@ -21,15 +22,21 @@ app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
 # This gets us better error messages for certain common request errors
 app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 
-@app.route('/')
-def index():
-    return render_template('main.html',title='Hello')
+@app.route('/', methods=['GET','POST'])
+def home():
+    if request.method == 'GET':
+        conn = dbi.connect()
+        departments = queries.find_depts(conn)
+        professors = queries.find_profs(conn)
+        courses = queries.find_courses(conn)
+        return render_template('home_page.html',title='Hello', 
+        departments = departments, courses = courses, professors = professors)
 
 @app.before_first_request
 def init_db():
     dbi.cache_cnf()
     # set this local variable to 'wmdb' or your personal or team db
-    db_to_use = 'kp1_db' 
+    db_to_use = 'agora_db' 
     dbi.use(db_to_use)
     print('will connect to {}'.format(db_to_use))
 
