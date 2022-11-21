@@ -1,3 +1,4 @@
+'''DO NOT RUN THIS'''
 use agora_db;
 
 drop table if exists `comments`;

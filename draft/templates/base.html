@@ -41,6 +41,7 @@
             <div class="formlabel" style="font-weight:bold;">Department</div>
             <div class="formsection">
                 <select id="department" class="w-select filter_selecter" name="department" ">
+                  <option value="0"> All </option>
                   {% for dept in departments %}
                     <option value={{ dept.abbrv }}>{{ dept.name }}</option>
                   {% endfor %}
@@ -53,6 +54,7 @@
 
               <div class="formsection">
                   <select id="professor" class="w-select filter_selecter" name="professor">
+                  <option value="0"> All </option>
                   {% for prof in professors %}
                     <option value={{ prof.pid }}>{{ prof.name }}</option>
                   {% endfor %}
@@ -65,6 +67,7 @@
 
               <div class="formsection">
                   <select id="course" class="w-select filter_selecter" name="course">
+                  <option value="0"> All </option>
                   {% for course in courses %}
                     <option value={{ course.courseid }}>{{ course.code }}: {{ course.title }}</option>
                   {% endfor %}
