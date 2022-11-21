@@ -47,13 +47,14 @@ def home():
             professors = queries.find_profs(conn)
             courses = queries.find_courses(conn)
             posts = queries.recent_posts(conn)
+            flash("Please choose a department")
             return render_template('home_page.html',title='Hello', 
             departments = departments, courses = courses, 
             professors = professors, posts = posts)
         elif prof == "0" and course == "0":
             #if only department chosen, direct to dept page
             return redirect(url_for('department', department=dept))
-        elif course == "0" and prof =! "0":
+        elif course == "0" and prof != "0":
             #if only prof chosen, direct to prof page
             return redirect(url_for('professor', department=dept, professor=prof))
         elif course != "0" and prof == "0":
