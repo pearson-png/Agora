@@ -2,8 +2,10 @@
 
 {% block main_content %}
 <h1>Welcome!</h1>
-    {% for post in posts %}   
-    <div class="card">
+    {% for post in posts %}
+    <!--Added the href here to allow each card to link to indiviual post page-->
+    <div class="card"> 
+        <h1> <a href="{{url_for('view_post', postid = post.postid)}}">Click to View Post</a>   <!--Need to specify the post id in this url-->
         <h2> {{ post.prof }} {{ post.course }} </h2>
         <h5>{{ post.user }} {{ post.time }}</h5>
         <p>{{ post.text }}</p>

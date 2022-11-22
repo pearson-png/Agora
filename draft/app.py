@@ -64,6 +64,31 @@ def home():
             #if all three were chosen, give specific prof and course page
             return redirect(url_for('course_section', department=dept, professor=prof, course=course))
 
+
+@app.route('/view/<postid>', methods=['GET','POST'])
+#view individual posts
+def view_post(postid):
+    conn = dbi.connect()
+    # if user clicks on a post
+    if request.method == 'GET':
+        user = queries.post_user(conn, postid)
+        course_info = queries.post_course_info(conn, postid) 
+        prof_info = queries.post_prof_info(conn, postid) 
+        text = queries.post_text(conn,postid)['text']
+        time = queries.post_time(conn,postid)
+
+    return render_template('view_post.html', action= url_for('view_post', postid=postid), #is this the right way to rendeer the template?
+        user=user, course_info=course_info, prof_info=prof_info, text=text, time=time) 
+    
+
+    
+        #gets post with course, prof, course rating, prof rating, text, (in later version comments, upvotes, and downvotes)
+    #in later version allows comments to be posted to individual post feed
+    #if request.method == 'POST':
+        
+
+
+
 @app.before_first_request
 def init_db():
     dbi.cache_cnf()
