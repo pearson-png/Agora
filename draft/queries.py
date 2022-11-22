@@ -44,27 +44,49 @@ def post_user(conn, postid):
     where postid = %s''', [postid])
     return curs.fetchone()
 
-def post_course_info(conn, postid):
-    '''Returns course rating and course code for single course from a specific post '''
+def post_course_rating(conn, postid):
+    '''Returns course rating  single course from a specific post '''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
-    select posts.course_rating, courses.code
+    select posts.course_rating
     from posts inner join courses 
     on (posts.course = courses.courseID)
     where postid = %s''',[postid]) 
     #returns course rating and course code
-    return curs.fetchall()
+    return curs.fetchone()
 
-def post_prof_info(conn, postid):
-    '''Returns rating and name for single prof from a specific post '''
+def post_course_code(conn, postid):
+    '''Returns course code for single course from a specific post '''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
-    select posts.prof_rating, professors.name
+    select courses.code
+    from posts inner join courses 
+    on (posts.course = courses.courseID)
+    where postid = %s''',[postid]) 
+    #returns course rating and course code
+    return curs.fetchone()
+
+def post_prof_rating(conn, postid):
+    '''Returns rating single prof from a specific post '''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+    select posts.prof_rating
     from posts inner join professors 
     on (posts.prof = professors.pid)
     where postid = %s''', [postid]) 
     #returns prof rating and prof name
-    return curs.fetchall()
+    return curs.fetchone()
+
+def post_prof_name(conn, postid):
+    '''Returns name for single prof from a specific post '''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+    select professors.name
+    from posts inner join professors 
+    on (posts.prof = professors.pid)
+    where postid = %s''', [postid]) 
+    #returns prof rating and prof name
+    return curs.fetchone()
 
 def post_text(conn, postid):
     '''Returns text from a specific post '''
@@ -86,7 +108,4 @@ def post_time(conn, postid):
     #returns time from one post
     return curs.fetchone()
 
-#what do I do if one of my queries returns multiple values (ex. prof rating and prof name)? How can I later separate those?
-# is it better to write 2 different queries, one for each value/piece of info? 
-#( basically just copy and paste current queries and change what they return)
 

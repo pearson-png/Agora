@@ -71,22 +71,17 @@ def view_post(postid):
     conn = dbi.connect()
     # if user clicks on a post
     if request.method == 'GET':
-        user = queries.post_user(conn, postid)
-        course_info = queries.post_course_info(conn, postid) 
-        prof_info = queries.post_prof_info(conn, postid) 
+        user = queries.post_user(conn, postid)['username']
+        course_code = queries.post_course_code(conn, postid)['code'] 
+        course_rating = queries.post_course_rating(conn, postid)['course_rating']
+        prof_name = queries.post_prof_name(conn, postid)['name']
+        prof_rating = queries.post_prof_rating(conn, postid)['prof_rating']
         text = queries.post_text(conn,postid)['text']
-        time = queries.post_time(conn,postid)
+        time = queries.post_time(conn,postid)['time']
 
-    return render_template('view_post.html', action= url_for('view_post', postid=postid), #is this the right way to rendeer the template?
-        user=user, course_info=course_info, prof_info=prof_info, text=text, time=time) 
-    
-
-    
-        #gets post with course, prof, course rating, prof rating, text, (in later version comments, upvotes, and downvotes)
-    #in later version allows comments to be posted to individual post feed
-    #if request.method == 'POST':
+    return render_template('view_post.html', action= url_for('view_post', postid=postid), 
+        user=user, course_code=course_code, course_rating=course_rating, prof_name=prof_name, prof_rating=prof_rating, text=text, time=time) 
         
-
 
 
 @app.before_first_request

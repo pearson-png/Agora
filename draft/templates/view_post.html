@@ -1,3 +1,6 @@
+<!--view_post.html page to view individual posts-->
+
+<!--Doesn't extend base.html so that we don't have the filters-->
 <!doctype html>
 <html lang='en'>
 <head>
@@ -10,7 +13,6 @@
     {% block head_stuff %} {% endblock %}
 </head>
 <body>
-<!--Instead of writing all this stuff again, should I just extend the base html template? might be easier-->
 {% with messages = get_flashed_messages() %}
 {% if messages %}
 <div id="messages">
@@ -36,10 +38,10 @@
 {% block main_content %}
 <h1>Welcome!</h1>
 <div class="card">
-    <h2> {{ prof_info.name }} {{ prof_info.prof_rating }} </h2>
-    <h2> {{ course_info.code }} {{ course_info.course_rating}} </h2>
-    <h5>{{ user }} {{ time }}</h5>
-    <p>{{ text }}</p>
+    <h2> Professor: {{ prof_name }} | Rating: {{ prof_rating }} </h2>
+    <h2> Course: {{ course_code }} | Rating: {{ course_rating}} </h2>
+    <h5>Posted by: {{ user }} | At: {{ time }}</h5>
+    <p>Text: {{ text }}</p>
 </div>
 {% endblock %}
 
