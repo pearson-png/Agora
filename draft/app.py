@@ -86,6 +86,41 @@ def view_post(postid):
     #in later version allows comments to be posted to individual post feed
     #if request.method == 'POST':
         
+@app.route('/<department>')
+def department(department):
+    return 0
+
+@app.route('/professor/<department>/<professor>')
+def professor(department, professor):
+    flash('here')
+    conn = dbi.connect()
+    name = queries.find_prof_name(conn, department,professor)
+    if name==None:
+        flash('Department and professor don\'t match, try again.')
+        return redirect(url_for('home'))
+    posts = queries.find_prof_posts(conn, professor)
+    #curs.execute('select avg(rating) as avg from prof_ratings where prof = %s', [pid])
+    #rating = (curs.fetchone())['avg']
+    #implement above after the rating table is created.
+    rating = 5
+    return render_template('professor.html', prof_name=name['name'], department=department, avg_rating=rating, posts=posts)
+
+@app.route('/course/<department>/<course>')
+def course(department, course):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    curs.execute('select * from courses where dept=%s and courseid=%s', [department,course])
+    course_info = curs.fetchone()
+    if course==None:
+        flash('Department and course don\'t match, try again.')
+        return redirect(url_for('home'))
+    curs.execute('select * from posts where course = %s', [course])
+    posts = curs.fetchall()
+    #curs.execute('select avg(rating) as avg from course_ratings where prof = %s', [pid])
+    #rating = (curs.fetchone())['avg']
+    #implement above after the rating table is created.
+    rating = 5
+    return render_template('course.html', code=course_info['code'], course=course_info['title'], department=course_info['dept'], avg_rating=rating, posts=posts)
 
 
 
@@ -107,3 +142,7 @@ if __name__ == '__main__':
         port = os.getuid()
     app.debug = True
     app.run('0.0.0.0',port)
+
+
+
+professor('MATH', 'Joe Lauer')

@@ -86,6 +86,23 @@ def post_time(conn, postid):
     #returns time from one post
     return curs.fetchone()
 
+def find_prof_name(conn, department,pid):
+    '''Returns name of professor with given department and pid'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''select name 
+                    from professors 
+                    where dept=%s and pid=%s''', [department,pid])
+    #returns one matching name
+    return curs.fetchone()
+
+def find_prof_posts(conn, pid):
+    '''Returns all posts about a given professor'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''select * from posts 
+                    where prof = %s''', [pid])
+    return curs.fetchall()
+
+
 #what do I do if one of my queries returns multiple values (ex. prof rating and prof name)? How can I later separate those?
 # is it better to write 2 different queries, one for each value/piece of info? 
 #( basically just copy and paste current queries and change what they return)
