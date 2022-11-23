@@ -1,0 +1,13 @@
+Luka Pearson
+
+I would like to implement a nature observation database like iNaturalist for students at Wellesley.
+
+iNaturalist is a phone app that allows people to post pictures of plants, animals, or fungus and records
+the geographic location of the observation. Users can comment on other's posts and suggest identifications. 
+You can create your own or join others' projects to collect observations for. The information collected can 
+be used by researchers. 
+
+If we can have people upload photos of their observations, I'd like to implement a feature that allows other 
+users to suggest an identification. If not, the abundance of different species and species types will be recorded. 
+The geographic location could be simplified by allowing people to select the location as the Arboretum, Lake Waban, 
+Science Center, etc.

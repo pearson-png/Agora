@@ -115,7 +115,6 @@ def find_users(conn):
         select uid, username from users''')
     return curs.fetchall()
 
-
 def username_from_uid(conn, uid):
     '''Returns the current username associated with the give uid'''
     curs = dbi.dict_cursor(conn)
@@ -123,3 +122,42 @@ def username_from_uid(conn, uid):
         select username from users where uid = %s''', [uid])
     return curs.fetchone()
 
+def add_professor(conn, name, dept):
+    '''Adds a professor to the database and returns pid'''
+    # add prof
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+    insert into professors(name, dept) values(%s,%s)''',[name, dept])
+    conn.commit()
+    # get pid
+    curs.execute('''
+    select last_insert_id() from professors''')
+    return curs.fetchone()    
+
+def add_course(conn, name, code, dept):
+    '''Adds a course to the database and returns courseid'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+    insert into courses(title, code, dept) values(%s,%s,%s)''',[name, code, dept])
+    conn.commit()
+    curs.execute('''
+    select last_insert_id() from courses''')
+    return curs.fetchone()  
+
+def add_department(conn, name, abbrv):
+    '''Add a department to the database'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+    insert into departments(name, abbrv) values(%s,%s)''',[name, abbrv])
+    conn.commit()
+
+def add_post(conn, time, user, course, prof, prof_rating, course_rating, text, attachments):
+    '''Add a new post to the database and returns the postid'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''insert into posts(time, user, course, prof, prof_rating, course_rating, text, attachments) 
+    values(%s,%s,%s,%s,%s,%s,%s,%s)''',
+    [time, user, course, prof, prof_rating, course_rating, text, attachments])
+    conn.commit()
+    curs.execute('''
+    select last_insert_id() from posts''')
+    return curs.fetchone() 
