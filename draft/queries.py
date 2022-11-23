@@ -44,27 +44,49 @@ def post_user(conn, postid):
     where postid = %s''', [postid])
     return curs.fetchone()
 
-def post_course_info(conn, postid):
-    '''Returns course rating and course code for single course from a specific post '''
+def post_course_rating(conn, postid):
+    '''Returns course rating  single course from a specific post '''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
-    select posts.course_rating, courses.code
+    select posts.course_rating
     from posts inner join courses 
     on (posts.course = courses.courseID)
     where postid = %s''',[postid]) 
     #returns course rating and course code
-    return curs.fetchall()
+    return curs.fetchone()
 
-def post_prof_info(conn, postid):
-    '''Returns rating and name for single prof from a specific post '''
+def post_course_code(conn, postid):
+    '''Returns course code for single course from a specific post '''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
-    select posts.prof_rating, professors.name
+    select courses.code
+    from posts inner join courses 
+    on (posts.course = courses.courseID)
+    where postid = %s''',[postid]) 
+    #returns course rating and course code
+    return curs.fetchone()
+
+def post_prof_rating(conn, postid):
+    '''Returns rating single prof from a specific post '''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+    select posts.prof_rating
     from posts inner join professors 
     on (posts.prof = professors.pid)
     where postid = %s''', [postid]) 
     #returns prof rating and prof name
-    return curs.fetchall()
+    return curs.fetchone()
+
+def post_prof_name(conn, postid):
+    '''Returns name for single prof from a specific post '''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+    select professors.name
+    from posts inner join professors 
+    on (posts.prof = professors.pid)
+    where postid = %s''', [postid]) 
+    #returns prof rating and prof name
+    return curs.fetchone()
 
 def post_text(conn, postid):
     '''Returns text from a specific post '''
@@ -106,4 +128,56 @@ def find_prof_posts(conn, pid):
 #what do I do if one of my queries returns multiple values (ex. prof rating and prof name)? How can I later separate those?
 # is it better to write 2 different queries, one for each value/piece of info? 
 #( basically just copy and paste current queries and change what they return)
+def find_users(conn):
+    '''Returns a list of dictionaries of all users'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+        select uid, username from users''')
+    return curs.fetchall()
 
+def username_from_uid(conn, uid):
+    '''Returns the current username associated with the give uid'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+        select username from users where uid = %s''', [uid])
+    return curs.fetchone()
+
+def add_professor(conn, name, dept):
+    '''Adds a professor to the database and returns pid'''
+    # add prof
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+    insert into professors(name, dept) values(%s,%s)''',[name, dept])
+    conn.commit()
+    # get pid
+    curs.execute('''
+    select last_insert_id() from professors''')
+    return curs.fetchone()    
+
+def add_course(conn, name, code, dept):
+    '''Adds a course to the database and returns courseid'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+    insert into courses(title, code, dept) values(%s,%s,%s)''',[name, code, dept])
+    conn.commit()
+    curs.execute('''
+    select last_insert_id() from courses''')
+    return curs.fetchone()  
+
+def add_department(conn, name, abbrv):
+    '''Add a department to the database'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+    insert into departments(name, abbrv) values(%s,%s)''',[name, abbrv])
+    conn.commit()
+
+def add_post(conn, time, user, course, prof, prof_rating, course_rating, text, attachments):
+    '''Add a new post to the database and returns the postid'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''insert into posts(time, user, course, prof, prof_rating, course_rating, text, attachments) 
+    values(%s,%s,%s,%s,%s,%s,%s,%s)''',
+    [time, user, course, prof, prof_rating, course_rating, text, attachments])
+    conn.commit()
+    curs.execute('''
+    select last_insert_id() from posts''')
+    return curs.fetchone() 
