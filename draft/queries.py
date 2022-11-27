@@ -117,6 +117,13 @@ def find_prof_name(conn, department,pid):
     #returns one matching name
     return curs.fetchone()
 
+def find_course_info(conn, department,courseid):
+    '''Returns info of course with given department and course id'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''select * from courses 
+                    where dept=%s and courseid=%s''', [department,courseid])
+    return curs.fetchone()
+
 def find_prof_posts(conn, pid):
     '''Returns all posts about a given professor'''
     curs = dbi.dict_cursor(conn)
@@ -124,6 +131,26 @@ def find_prof_posts(conn, pid):
                     where prof = %s''', [pid])
     return curs.fetchall()
 
+def find_course_posts(conn, courseid):
+    '''Returns all posts about a given course'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''select * from posts where course = %s''', [courseid])
+    return curs.fetchall()
+
+def find_prof_avgrating(conn, pid):
+    '''Returns all posts about a given professor'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''select avg(rating) as avg from prof_ratings 
+                    where pid = %s''', [pid])
+    return (curs.fetchone())['avg']
+
+def find_course_avgrating(conn, courseid):
+    '''Returns all posts about a given course'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''select avg(rating) as avg 
+                    from course_ratings 
+                    where courseid = %s''', [courseid])
+    return (curs.fetchone())['avg']
 
 #what do I do if one of my queries returns multiple values (ex. prof rating and prof name)? How can I later separate those?
 # is it better to write 2 different queries, one for each value/piece of info? 
