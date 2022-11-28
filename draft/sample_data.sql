@@ -17,8 +17,8 @@ insert into professors(pid, dept, `name`) values (4, 'MATH', 'Joe Lauer');
 insert into professors(pid, dept, `name`) values (5, 'MATH', 'Ann Trenk');
 
 insert into prof_ratings(rating, user,pid) values (5,1,1);
---insert into prof_ratings(rating, user,pid) values (4,1,2); --can't insert
+insert into prof_ratings(rating, user,pid) values (4,1,2);
 insert into prof_ratings(rating, user,pid) values (4,2,1);
 
 insert into course_ratings(rating, user,courseid) values (5,1,1);
---insert into course_ratings(rating, user,courseid) values (4,2,1);
+insert into course_ratings(rating, user,courseid) values (4,2,1);
