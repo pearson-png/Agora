@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block form %}
+{% endblock %}
+
+{% block main_content %}
+
+<form method="POST" action="{{url_for('upload')}}" enctype="multipart/form-data">
+    <p>Choose a professor and/or course to review, and the department:</p>
+    <p><label>Department:
+        <select name="dept">
+            <option value="">Choose One</option>
+            {% for dept in departments %}
+            <option value="{{dept['abbrv']}}">{{dept['name']}}</option>
+            {% endfor %}
+        </select>
+    </label></p>
+
+    <p><label>Professor:
+        <select name="pid">
+            <option value="">Choose One</option>
+            {% for prof in professors %}
+            <option value="{{prof['pid']}}">{{prof['name']}}</option>
+            {% endfor %}
+        </select>
+    </label></p>
+    
+    <p><label>Course:
+        <select name="course">
+            <option value="">Choose One</option>
+            {% for course in courses %}
+            <option value="{{course['courseid']}}">{{course['title']}}</option>
+            {% endfor %}
+            </select>
+    </label></p>
+        
+    <p><label>Professor Rating:
+        <select name="prof-rating">
+            <option value="">choose</option>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+        </select>
+    </label></p>
+
+    <p><label>Course Rating:
+        <select name="course-rating">
+            <option value="">choose</option>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+        </select>
+    </label></p>
+
+    <p><label>PDF Upload: 
+        <input type="file" name="pdf">
+    </label></p>
+
+    <p><label>Review:
+        <textarea name="review-text" maxlength="5000"></textarea>
+    </label></p>
+    
+    <p><input type="submit" value="process form">
+</form>
+
+{% endblock %}
