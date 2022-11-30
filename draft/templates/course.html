@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<p>{{code}} {{course}} from {{department}} department, has an average rating of {{avg_rating}}</p>
+<article>
+    {% for post in posts %}
+    <li><a href = "{{url_for('view_post', postid = post.postid)}}">{{post.course}}: {{post.text}}</a></li>
+    {% endfor %}
+</article>
+{% endblock %}

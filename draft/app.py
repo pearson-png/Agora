@@ -190,7 +190,35 @@ def upload():
         postid = queries.add_post(conn, time, uid, courseid, profid, prof_rating, course_rating, review_text, pdf)
         flash('Upload successful')
         # go to post page
-        redirect(url_for('view_post', postid=postid))
+        return redirect(url_for('view_post', postid=postid))
+
+@app.route('/<department>')
+def department(department):
+    return 0
+
+@app.route('/professor/<department>/<professor>')
+def professor(department, professor):
+    conn = dbi.connect()
+    name = queries.find_prof_name(conn, department,professor)
+    if name==None:
+        flash('Department and professor don\'t match, try again.')
+        return redirect(url_for('home'))
+    posts = queries.find_prof_posts(conn, professor)
+    rating = queries.find_prof_avgrating(conn, professor)
+    #rating = 5
+    return render_template('professor.html', prof_name=name['name'], department=department, avg_rating=rating, posts=posts)
+
+@app.route('/course/<department>/<course>')
+def course(department, course):
+    conn = dbi.connect()
+    course_info = queries.find_course_info(conn, department,course)
+    if course_info==None:
+        flash('Department and course don\'t match, try again.')
+        return redirect(url_for('home'))
+    posts = queries.find_course_posts(conn, course)
+    rating = queries.find_course_avgrating(conn, course)
+    #rating = 5
+    return render_template('course.html', code=course_info['code'], course=course_info['title'], department=course_info['dept'], avg_rating=rating, posts=posts)
 
 @app.before_first_request
 def init_db():
@@ -210,3 +238,7 @@ if __name__ == '__main__':
         port = os.getuid()
     app.debug = True
     app.run('0.0.0.0',port)
+
+
+
+professor('MATH', 'Joe Lauer')

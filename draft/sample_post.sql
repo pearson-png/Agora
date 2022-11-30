@@ -1,6 +1,7 @@
 use agora_db;
 
 insert into users(`uid`, username, email, `password`) values(null, 'lazy_panda', 'na1', 'password1');
+insert into users(`uid`, username, email, `password`) values(null, 'unicorno', 'ym102', 'password2');
 
 insert into posts(postid,`time`, user, course, prof, prof_rating, course_rating, `text`, attachments, upvotes, downvotes) values 
 (null, '2022-07-24', 1, 1, 1, 5, 5, 'This class is awesome', '', 5, 1);
