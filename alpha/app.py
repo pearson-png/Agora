@@ -139,46 +139,7 @@ def upload():
             return render_template('post-form.html', title='Create a Post',
                                     professors = professors, courses = courses,
                                     departments = departments)
-        
-        ### use code below if we don't get the course browser csv and have user enter info manually
-        # new_dept_name = request.form['new-dept-name']
-        # new_dept_abbrv = request.form['new-dept-name']
-        # new_prof_name = request.form['new-prof-name']
-        # new_course_name = request.form['new-course-name']
-        # new_course_code = request.form['new-course-code']
-        # raw_info = [dept, new_dept_name, new_dept_abbrv, profid, new_prof_name, courseid,\
-        # new_course_name, new_course_code, prof_rating, course_rating, review_text]
-
-        # # if entering a new department
-        # if dept == 'other':
-        #     if (new_dept_name == "" or new_dept_abbrv == ""):
-        #         flash('Please enter the required information to add a new \
-        #         department, or select one from the drop down menu above.')
-        #         return render_template('post-form.html', title='Create a Post',
-        #                                 professors = professors, courses = courses, 
-        #                                 departments = departments)
-        #     queries.add_department(conn, new_dept_name, new_dept_abbrv)
-        #     dept = new_dept_abbrv
-
-        # # if entering a new professor
-        # if profid == 'other':
-        #     if (new_prof_name == ""):
-        #         flash('Please enter the required information to add a new \
-        #         professor, or select one from the drop down menu above.')
-        #         return render_template('post-form.html', title='Create a Post',
-        #                                 professors = professors, courses = courses, 
-        #                                 departments = departments)
-        #     profid = queries.add_professor(conn, new_prof_name, dept)
-        
-        # # if entering a new course
-        # if courseid == 'other':
-        #     if (new_course_name == "" or new_course_code == ""):
-        #         flash('Please enter the required information to add a new \
-        #         course, or select one from the drop down menu above.')
-        #         return render_template('post-form.html', title='Create a Post',
-        #                                 professors = professors, courses = courses, 
-        #                                 departments = departments)
-        #     courseid = queries.add_course(conn, new_course_name, new_course_code, dept)
+    
 
         # upload post
         if profid == '':
