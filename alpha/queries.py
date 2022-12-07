@@ -108,6 +108,50 @@ def post_time(conn, postid):
     #returns time from one post
     return curs.fetchone()
 
+def find_prof_name(conn, department,pid):
+    '''Returns name of professor with given department and pid'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''select name 
+                    from professors 
+                    where dept=%s and pid=%s''', [department,pid])
+    #returns one matching name
+    return curs.fetchone()
+
+def find_course_info(conn, department,courseid):
+    '''Returns info of course with given department and course id'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''select * from courses 
+                    where dept=%s and courseid=%s''', [department,courseid])
+    return curs.fetchone()
+
+def find_prof_posts(conn, pid):
+    '''Returns all posts about a given professor'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''select * from posts 
+                    where prof = %s''', [pid])
+    return curs.fetchall()
+
+def find_course_posts(conn, courseid):
+    '''Returns all posts about a given course'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''select * from posts where course = %s''', [courseid])
+    return curs.fetchall()
+
+def find_prof_avgrating(conn, pid):
+    '''Returns all posts about a given professor'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''select avg(rating) as avg from prof_ratings 
+                    where pid = %s''', [pid])
+    return (curs.fetchone())['avg']
+
+def find_course_avgrating(conn, courseid):
+    '''Returns all posts about a given course'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''select avg(rating) as avg 
+                    from course_ratings 
+                    where courseid = %s''', [courseid])
+    return (curs.fetchone())['avg']
+
 def find_users(conn):
     '''Returns a list of dictionaries of all users'''
     curs = dbi.dict_cursor(conn)
