@@ -1,4 +1,4 @@
-<!--view_post.html page to view individual posts-->
+<!--view-post-prof-course.html page to view individual posts with both course and prof ratings-->
 
 <!--Doesn't extend base.html so that we don't have the filters-->
 <!doctype html>
@@ -38,10 +38,11 @@
 {% block main_content %}
 <h1>Welcome!</h1>
 <div class="card">
-    <h2> Professor: {{ prof_name }} | Rating: {{ prof_rating }} </h2>
-    <h2> Course: {{ course_code }} | Rating: {{ course_rating}} </h2>
+    <h2> Course: {{ course_code }} - {{course_name}}| Rating: {{ course_rating}} </h2>
     <h5>Posted by: {{ user }} | At: {{ time }}</h5>
     <p>Text: {{ text }}</p>
+    <!-- How to fill in the post id here? -->
+    <a href="{{url_for('comment')}}">Leave a Comment</a> 
 </div>
 {% endblock %}
 

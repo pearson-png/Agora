@@ -72,16 +72,57 @@ def view_post(postid):
     conn = dbi.connect()
     # if user clicks on a post
     if request.method == 'GET':
+        #always include these in all posts
         user = queries.post_user(conn, postid)['username']
-        course_code = queries.post_course_code(conn, postid)['code'] 
-        course_rating = queries.post_course_rating(conn, postid)['course_rating']
-        prof_name = queries.post_prof_name(conn, postid)['name']
-        prof_rating = queries.post_prof_rating(conn, postid)['prof_rating']
         text = queries.post_text(conn,postid)['text']
         time = queries.post_time(conn,postid)['time']
 
-    return render_template('view_post.html', action= url_for('view_post', postid=postid), 
-        user=user, course_code=course_code, course_rating=course_rating, prof_name=prof_name, prof_rating=prof_rating, text=text, time=time) 
+        #course variables
+        try:
+            course_code = queries.post_course_code(conn, postid)['code']
+        except TypeError:
+            course_code = None
+        try:
+            course_name = queries.post_course_name(conn,postid)['title']
+        except TypeError:
+            course_name = None
+        try:
+            course_rating = queries.post_course_rating(conn, postid)['course_rating']
+        except TypeError:
+            course_rating = None
+        #professor variables
+        try:
+            prof_name = queries.post_prof_name(conn, postid)['name']
+        except TypeError:
+            prof_name = None
+        try:
+            prof_rating = queries.post_prof_rating(conn, postid)['prof_rating']
+        except TypeError:
+            prof_rating = None
+        
+        #if there is no professor 
+        if prof_name == None:
+            return render_template('view-post-course.html', action= url_for('view_post', postid=postid), 
+            user=user, course_name=course_name, course_code=course_code, course_rating=course_rating, text=text, time=time)
+        #if there is no course
+        elif course_code == None:
+            return render_template('view-post-prof.html', action= url_for('view_post', postid=postid), 
+            user=user, prof_name=prof_name, prof_rating=prof_rating, text=text, time=time)
+        #if there is a prof and a course
+        else:
+            return render_template('view-post-prof-course.html', action= url_for('view_post', postid=postid), 
+            user=user, course_name=course_name, course_code=course_code, course_rating=course_rating, prof_name=prof_name, 
+            prof_rating=prof_rating, text=text, time=time) 
+
+@app.route('/comment/', methods=['GET', 'POST'])
+def comment():
+    if request.method == 'GET':
+        conn = dbi.connect()
+        ### TO DO: Check if user is logged in and get their user id
+        # for now assign random user
+        return render_template('comment-form.html', action= url_for('comment'))
+    
+
         
 @app.route('/upload/', methods=['GET','POST'])
 def upload():
