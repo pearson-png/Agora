@@ -22,6 +22,17 @@ app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
 
 # This gets us better error messages for certain common request errors
 app.config['TRAP_BAD_REQUEST_ERRORS'] = True
+# CAS
+from flask_cas import CAS
+
+CAS(app)
+
+app.config['CAS_SERVER'] = 'https://login.wellesley.edu:443'
+app.config['CAS_LOGIN_ROUTE'] = '/module.php/casserver/cas.php/login'
+app.config['CAS_LOGOUT_ROUTE'] = '/module.php/casserver/cas.php/logout'
+app.config['CAS_VALIDATE_ROUTE'] = '/module.php/casserver/serviceValidate.php'
+app.config['CAS_AFTER_LOGIN'] = 'login'
+app.config['CAS_AFTER_LOGOUT'] = 'login'
 
 @app.route('/', methods=['GET','POST'])
 def home():
@@ -64,6 +75,12 @@ def home():
         else:
             #if all three were chosen, give specific prof and course page
             return redirect(url_for('course_section', department=dept, professor=prof, course=course))
+
+@app.route('/login/')
+def login():
+    if 'CAS_USERNAME' in session:
+        return redirect(url_for('home'))
+    return render_template('login.html', title = 'Login')
 
 
 @app.route('/view/<postid>', methods=['GET','POST'])
@@ -180,7 +197,6 @@ def upload():
             return render_template('post-form.html', title='Create a Post',
                                     professors = professors, courses = courses,
                                     departments = departments)
-    
 
         # upload post
         if profid == '':
