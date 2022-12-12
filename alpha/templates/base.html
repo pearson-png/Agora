@@ -53,12 +53,11 @@
             <div></div>
             <div class="row">
                 <div class="formlabel" style="font-weight:bold;">Professor</div>
-
                 <div class="formsection">
                     <select id="professor" class="w-select filter_selecter" name="professor">
                     <option value="0"> All </option>
                     {% for prof in professors %}
-                      <option value={{ prof.pid }}>{{ prof.name }}</option>
+                      <option value={{ prof }}>{{ prof }}</option>
                     {% endfor %}
                   </select>
                 </div>
@@ -66,18 +65,18 @@
             <div></div>
             <div class="row">
                 <div class="formlabel" style="font-weight:bold;">Course</div>
-
                 <div class="formsection">
                     <select id="course" class="w-select filter_selecter" name="course">
                     <option value="0"> All </option>
                     {% for course in courses %}
-                      <option value={{ course.courseid }}>{{ course.code }}: {{ course.title }}</option>
+                      <option value={{ course }}>{{ course }}:{{ course }}</option>
                     {% endfor %}
                   </select>
                 </div>
+            </div>
                 <div></div>
                     <div class="formsection">
-                      <input name="submit" data-wait="Please wait..." type="submit" value="Search" class="w-button submit_button"/>
+                      <button type="button" id="process_input">Search</button>
                   </div>
               </div>
      </form>
@@ -93,10 +92,36 @@
 {% block main_content %}
 <h1>Welcome!</h1>
 {% endblock %}
-
-  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-  {% block end_scripts %}
-  {% endblock %}
   
 </body>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function() {
+    $('#department').change(function(){
+
+      $.getJSON('/update_dropdown', {
+            department: $('#department').val()
+
+          }).done(function(data) {
+                $('#professor').html(data.html_string1);
+                $('#course').html(data.html_string2);
+           })
+    });
+    $("#process_input").on("click", function (event) { 
+      $.ajax({
+          data : {
+            department : $('#department').val(),
+            professor : $('#professor').val(),
+            course : $('#course').val(),
+          },
+          type : 'POST',
+          url : '/'
+        })
+        .done(function(data){
+          $('#output').text(data.output).show();
+        });
+        event.preventDefault();
+      });
+    }); 
+</script>
 </html>

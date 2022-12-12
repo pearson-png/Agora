@@ -7,6 +7,23 @@ def find_depts(conn):
         select * from departments''')
     return curs.fetchall()
 
+def find_profs_indepartment(conn, department):
+    '''Returns a list of dictionaries of professors
+    in a given department'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+        select pid, name from professors where dept = %s''',
+        [department])
+    return curs.fetchall()
+
+def find_courses_indepartment(conn, department):
+    '''Returns a list of dictionaries of courses in
+    a given department'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+        select courseid, title, code from courses where
+        dept = %s''', [department])
+    return curs.fetchall()
 
 def find_profs(conn):
     '''Returns a list of dictionaries of all professors'''
@@ -14,7 +31,6 @@ def find_profs(conn):
     curs.execute('''
         select pid, name from professors''')
     return curs.fetchall()
-
 
 def find_courses(conn):
     '''Returns a list of dictionaries of all courses'''

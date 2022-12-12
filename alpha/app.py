@@ -41,8 +41,10 @@ def home():
     if request.method == 'GET':
         #gets homepage with dropdown menu of all choices and recent posts
         departments = queries.find_depts(conn)
-        professors = queries.find_profs(conn)
-        courses = queries.find_courses(conn)
+        professors = {}
+        courses = {}
+        # professors = queries.find_profs(conn)
+        # courses = queries.find_courses(conn)
         posts = queries.recent_posts(conn)
         return render_template('home_page.html',title='Hello', 
         departments = departments, courses = courses, 
@@ -57,8 +59,8 @@ def home():
         if dept == "0":
             #if no dept chosen, reload the homepage no matter other fields
             departments = queries.find_depts(conn)
-            professors = queries.find_profs(conn)
-            courses = queries.find_courses(conn)
+            professors = {}
+            courses = {}
             posts = queries.recent_posts(conn)
             flash("Please choose a department")
             return render_template('home_page.html',title='Hello', 
@@ -76,6 +78,30 @@ def home():
         else:
             #if all three were chosen, give specific prof and course page
             return redirect(url_for('course_section', department=dept, professor=prof, course=course))
+
+@app.route('/update_dropdown')
+def update_dropdown():
+    conn = dbi.connect()
+
+    # the value of the department dropdown (selected by the user)
+    department = request.args.get('department')
+
+    # get values for the second dropdown
+    professors = queries.find_profs_indepartment(conn, department)
+
+    # get values for the third
+    courses = queries.find_courses_indepartment(conn, department)
+    # create the values in the dropdown as a html string
+    html_string1 = '<option value="0">All</option>'
+    for professor in professors:
+        html_string1 += '<option value="{}">{}</option>'.format(professor['pid'], professor['name'])
+
+    html_string2 = '<option value="0">All</option>'
+    for course in courses:
+        html_string2 += '<option value="{}">{}:{}</option>'.format(course['courseid'], course['code'], course['title'])
+
+    return jsonify(html_string1=html_string1, html_string2=html_string2)
+
 
 @app.route('/login/')
 def login():
@@ -238,6 +264,10 @@ def course(department, course):
     #rating = 5
     return render_template('course.html', code=course_info['code'], course=course_info['title'], department=course_info['dept'], avg_rating=rating, posts=posts)
 
+@app.route('/course-section/<department>/<professor>/<course>')
+def course_section(department, professor, course):
+    #placeholder for now
+    return redirect(url_for('home'))
 
 @app.route('/change-username', methods=['POST'])
 def change_username():
@@ -272,3 +302,38 @@ if __name__ == '__main__':
         port = os.getuid()
     app.debug = True
     app.run('0.0.0.0',port)
+
+#code unnecessary with current tagging system, needed if prof-course relation enforced
+# @app.route('/update_professors')
+# def update_professors():
+#     conn = dbi.connect()
+
+#     # the value of the course chosen
+#     courseid = request.args.get('course')
+
+#     # get values for the second dropdown
+#     professors = queries.find_profs_incourse(conn, courseid)
+
+#     # create the values in the dropdown as a html string
+#     html_string1 = '<option value="0">All</option>'
+#     for professor in professors:
+#         html_string1 += '<option value="{}">{}</option>'.format(professor['pid'], professor['name'])
+
+#     return jsonify(html_string1=html_string1)
+
+# @app.route('/update_courses')
+# def update_courses():
+#     conn = dbi.connect()
+
+#     # the value of the professor chosen
+#     pid = request.args.get('professor')
+
+#     # get values for the second dropdown
+#     courses = queries.find_course_byprofessor(conn, pid)
+
+#     # create the values in the dropdown as a html string
+#     html_string2 = '<option value="0">All</option>'
+#     for course in courses:
+#         html_string2 += '<option value="{}">{}:{}</option>'.format(course['courseid'], course['code'], course['title'])
+
+#     return jsonify(html_string2=html_string2)
