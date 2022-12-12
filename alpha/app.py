@@ -12,6 +12,7 @@ import cs304dbi as dbi
 import random
 import queries
 from datetime import datetime
+import helper
 
 app.secret_key = 'your secret here'
 # replace that with a random key
@@ -237,6 +238,21 @@ def course(department, course):
     #rating = 5
     return render_template('course.html', code=course_info['code'], course=course_info['title'], department=course_info['dept'], avg_rating=rating, posts=posts)
 
+
+@app.route('/change-username', methods=['POST'])
+def change_username():
+    #get uid
+    uid = session['uid']
+    #get new name
+    new_name = helper.random_username()
+    #check if name exist
+    check = queries.check_username(new_name)
+    #if not none, the name exists, try again until you get a free name
+    while check != None:
+        new_name = helper.random_username()
+        check = queries.check_username(uid, new_name)
+    queries.update_username(new_name)
+    return redirect(url_for('home'))
 
 @app.before_first_request
 def init_db():

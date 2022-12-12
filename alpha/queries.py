@@ -202,6 +202,20 @@ def add_prof_post(conn, time, user, prof, prof_rating, text, attachments):
     curs.execute('''select last_insert_id() from posts''')
     return curs.fetchone() 
 
+def check_username(name):
+    '''Returns a dictionary of user info with the given username'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''select * from users where username = %s''',
+    [name])
+    return curs.fetchone() 
+
+def update_username(uid, name):
+    '''Updates the username for the given uid'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''UPDATE users SET username = %s 
+    WHERE uid = %s''', [name, uid])
+    conn.commit()
+
 # use code below if we don't get the course browser csv
 
 # def add_professor(conn, name, dept):
