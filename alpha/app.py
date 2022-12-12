@@ -102,7 +102,6 @@ def update_dropdown():
 
     return jsonify(html_string1=html_string1, html_string2=html_string2)
 
-
 @app.route('/login/')
 def login():
     if 'CAS_USERNAME' in session:
@@ -174,9 +173,10 @@ def upload():
     ### TO DO: Check if user is logged in and get their user id
     # for now assign random user
     people = queries.find_users(conn)
-    uid = random.choice([person['uid'] for person in people])
-    professors = queries.find_profs(conn)
-    courses = queries.find_courses(conn)
+    #uid = random.choice([person['uid'] for person in people])
+    uid = 1
+    professors = {}
+    courses = {}
     departments = queries.find_depts(conn)
 
     if request.method == 'GET':
@@ -235,6 +235,29 @@ def upload():
         flash('Upload successful')
         # go to post page
         return redirect(url_for('view_post', postid=postid['last_insert_id()']))
+
+@app.route('/update_upload_form')
+def update_upload_form():
+    conn = dbi.connect()
+
+    # the value of the department dropdown (selected by the user)
+    department = request.args.get('department')
+
+    # get values for the second dropdown
+    professors = queries.find_profs_indepartment(conn, department)
+
+    # get values for the third
+    courses = queries.find_courses_indepartment(conn, department)
+    # create the values in the dropdown as a html string
+    html_string1 = '<option value="">Choose One</option>'
+    for professor in professors:
+        html_string1 += '<option value="{}">{}</option>'.format(professor['pid'], professor['name'])
+
+    html_string2 = '<option value="">Choose One</option>'
+    for course in courses:
+        html_string2 += '<option value="{}">{}:{}</option>'.format(course['courseid'], course['code'], course['title'])
+
+    return jsonify(html_string1=html_string1, html_string2=html_string2)
 
 @app.route('/<department>')
 def department(department):
