@@ -63,19 +63,19 @@ def home():
         search = filters['search']
         ##options here
         if dept == "0":
-            if search != None:
+            if search != 'None':
                 return redirect(url_for('course_search', department=dept, query=search))
             #if no dept chosen, and no search entered, reload the homepage no matter other fields
             departments = queries.find_depts(conn)
             professors = {}
             courses = {}
             posts = queries.recent_posts(conn)
-            flash("Please choose a department")
+            flash("Please choose a department or fill in the search box")
             return render_template('home_page.html',title='Hello', 
             departments = departments, courses = courses, 
             professors = professors, posts = posts)
         elif prof == "0" and course == "0":
-            if search != None:
+            if search != 'None':
                 return redirect(url_for('course_search', department=dept, query=search))
             #if only department chosen, direct to dept page
             return redirect(url_for('department', department=dept))
@@ -346,7 +346,13 @@ def update_upload_form():
 
 @app.route('/<department>')
 def department(department):
-    return 0
+    conn = dbi.connect()
+    course_list = queries.find_dept_course(conn, department)
+    dept_name = queries.find_dept_name(conn, department)
+    if course_list == None:
+        flash("No matching courses found")
+        return redirect(url_for('home'))
+    return render_template('department.html', course_list=course_list, abbrv=department, name=dept_name['name'])
 
 @app.route('/professor/<department>/<professor>')
 def professor(department, professor):

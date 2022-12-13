@@ -152,6 +152,19 @@ def search_course(conn, dept, query):
                         where lower(title) like %s and dept=%s""", [query_string, dept]) 
     return curs.fetchall()
 
+def find_dept_course(conn, dept):
+    curs = dbi.dict_cursor(conn)
+    curs.execute("""select dept, courseid, title, code
+                    from courses 
+                    where dept=%s""", [dept]) 
+    return curs.fetchall()
+
+def find_dept_name(conn, dept):
+    curs = dbi.dict_cursor(conn)
+    curs.execute("""select name
+                    from departments
+                    where abbrv=%s""", [dept]) 
+    return curs.fetchone()
 
 def find_course_info(conn, department,courseid):
     '''Returns info of course with given department and course id'''
