@@ -218,6 +218,16 @@ def add_prof_post(conn, time, user, prof, prof_rating, text, attachments):
     curs.execute('''select last_insert_id() from posts''')
     return curs.fetchone() 
 
+def add_comment(conn, postid, time, user, text, attachments, upvotes, downvotes):
+    '''Add a new comment associated with a post to the database and returns the commentid'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''insert into comments(postid, time, user, text, attachments, upvotes, downvotes)
+                    values(%s,%s,%s,%s,%s,%s,%s)''', 
+                    [postid, time, user, text, attachments, upvotes, downvotes])
+    conn.commit()
+    curs.execute('''select last_insert_id() from comments''')
+    return curs.fetchone()
+
 def check_username(name):
     '''Returns a dictionary of user info with the given username'''
     curs = dbi.dict_cursor(conn)

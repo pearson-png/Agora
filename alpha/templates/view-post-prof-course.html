@@ -46,6 +46,15 @@
     
     <a href="{{url_for('comment')}}">Leave a Comment</a> 
 </div>
+<!-- Make this usable
+{% for comment in comments %}
+<div class="card">  
+    <h2> {{ post.prof }} {{ post.course }} </h2>
+    <h5>{{ post.user }} {{ post.time }}</h5>
+    <p>{{ post.text }}</p>
+</div>
+{% endfor %} -->
+
 {% endblock %}
 
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
