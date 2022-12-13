@@ -26,6 +26,8 @@
   <ul>
     <li><a href="{{url_for('home')}}">Home</a></li>
     <li><a href="{{url_for('upload')}}">Create a Post</a></li>
+    <li><a href="{{url_for('change_username')}}">Change Username</a></li>
+    <li><a href="{{url_for('login')}}">Logout</a></li>
   </ul>
 </nav>
 {% endblock %}
@@ -75,8 +77,16 @@
                 </div>
             </div>
                 <div></div>
+                <div class="row">
+                  <div class="formlabel" style="font-weight:bold;">Search</div>
+                  <div class="formsection">
+                      <input type = "text" required name = "search" value= None>
+                    </div>
+                  </div>
+                      <div></div>
                     <div class="formsection">
-                      <button type="button" id="process_input">Search</button>
+                      <input name="submit" data-wait="Please wait..." type="submit" value="Search" class="w-button submit_button"/>
+                      <!-- <button type="button" id="process_input">Search</button>-->
                   </div>
               </div>
      </form>
