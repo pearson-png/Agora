@@ -163,6 +163,32 @@ def view_post(postid):
             course_code=course_code, course_rating=course_rating, prof_name=prof_name, 
             prof_rating=prof_rating, text=text, time=time, comments=comments) 
 
+@app.route('/upvote-post/<postid>', methods=['GET', 'POST'])
+def post_upvote(postid):
+    conn = dbi.connect()
+    upvotesDict = queries.get_post_upvotes(conn,postid)
+    if upvotesDict['upvotes'] == None:
+        upvotes = 1
+        queries.update_post_upvotes(conn,postid,upvotes)
+        
+    else:
+        upvotes = upvotesDict['upvotes'] + 1
+        queries.update_post_upvote(conn,postid,upvotes)
+    return redirect(url_for('home'))
+
+@app.route('/downvote-post/<postid>', methods=['GET', 'POST'])
+def post_downvote(postid):
+    conn = dbi.connect()
+    downvotesDict = queries.get_post_downvotes(conn,postid)
+    if downvotesDict['downvotes'] == None:
+        downvotes = 1
+        queries.update_post_downvotes(conn,postid,downvotes)
+        
+    else:
+        downvotes = downvotesDict['downvotes'] + 1
+        queries.update_post_downvotes(conn,postid,downvotes)
+    return redirect(url_for('home'))
+
 @app.route('/comment/<postid>', methods=['GET', 'POST'])
 def comment(postid):
     conn = dbi.connect()
@@ -199,7 +225,7 @@ def comment_upvote(postid,commentid):
     conn = dbi.connect()
     upvotes = queries.get_comment_upvotes(conn,commentid)
     upvotes = upvotes['upvotes'] + 1
-    queries.update_comment_upvote(conn,commentid,upvotes)
+    queries.update_comment_upvotes(conn,commentid,upvotes)
     return redirect(url_for('view_post', postid=postid))
 
 @app.route('/downvote-comment/<postid>/<commentid>', methods=['GET', 'POST'])
