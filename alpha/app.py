@@ -32,11 +32,16 @@ app.config['CAS_SERVER'] = 'https://login.wellesley.edu:443'
 app.config['CAS_LOGIN_ROUTE'] = '/module.php/casserver/cas.php/login'
 app.config['CAS_LOGOUT_ROUTE'] = '/module.php/casserver/cas.php/logout'
 app.config['CAS_VALIDATE_ROUTE'] = '/module.php/casserver/serviceValidate.php'
-app.config['CAS_AFTER_LOGIN'] = 'login'
+app.config['CAS_AFTER_LOGIN'] = 'home'
 app.config['CAS_AFTER_LOGOUT'] = 'login'
 
 @app.route('/', methods=['GET','POST'])
 def home():
+    # check if logged in
+    print('Session keys: ',list(session.keys()))
+    for k in list(session.keys()):
+        print(k,' => ',session[k])
+        
     conn = dbi.connect()
     if request.method == 'GET':
         #gets homepage with dropdown menu of all choices and recent posts
@@ -121,7 +126,7 @@ def update_dropdown():
 def login():
     if 'CAS_USERNAME' in session:
         return redirect(url_for('home'))
-    return render_template('login.html', title = 'Login')
+    return render_template('login.html', title = 'Login',cas_attributes = session.get('CAS_ATTRIBUTES'))
 
 
 @app.route('/view/<postid>', methods=['GET','POST'])
@@ -134,6 +139,7 @@ def view_post(postid):
         user = queries.post_user(conn, postid)['username']
         text = queries.post_text(conn,postid)['text']
         time = queries.post_time(conn,postid)['time']
+        comments = queries.get_comments(conn,postid)
 
         #course variables
         try:
@@ -160,26 +166,90 @@ def view_post(postid):
         
         #if there is no professor 
         if prof_name == None:
-            return render_template('view-post-course.html', action= url_for('view_post', postid=postid), 
-            user=user, course_name=course_name, course_code=course_code, course_rating=course_rating, text=text, time=time)
+            return render_template('view-post-course.html', postid=postid, user=user, course_name=course_name, 
+            course_code=course_code, course_rating=course_rating, text=text, time=time, comments=comments)
         #if there is no course
         elif course_code == None:
-            return render_template('view-post-prof.html', action= url_for('view_post', postid=postid), 
-            user=user, prof_name=prof_name, prof_rating=prof_rating, text=text, time=time)
+            return render_template('view-post-prof.html', postid=postid, user=user, prof_name=prof_name, 
+            prof_rating=prof_rating, text=text, time=time, comments=comments)
         #if there is a prof and a course
         else:
-            return render_template('view-post-prof-course.html', action= url_for('view_post', postid=postid), 
-            user=user, course_name=course_name, course_code=course_code, course_rating=course_rating, prof_name=prof_name, 
-            prof_rating=prof_rating, text=text, time=time) 
+            return render_template('view-post-prof-course.html', postid=postid, user=user, course_name=course_name, 
+            course_code=course_code, course_rating=course_rating, prof_name=prof_name, 
+            prof_rating=prof_rating, text=text, time=time, comments=comments) 
 
-@app.route('/comment/', methods=['GET', 'POST'])
-def comment():
+@app.route('/upvote-post/<postid>', methods=['GET', 'POST'])
+def post_upvote(postid):
+    conn = dbi.connect()
+    upvotesDict = queries.get_post_upvotes(conn,postid)
+    if upvotesDict['upvotes'] == None:
+        upvotes = 1
+        queries.update_post_upvotes(conn,postid,upvotes)
+        
+    else:
+        upvotes = upvotesDict['upvotes'] + 1
+        queries.update_post_upvote(conn,postid,upvotes)
+    return redirect(url_for('home'))
+
+@app.route('/downvote-post/<postid>', methods=['GET', 'POST'])
+def post_downvote(postid):
+    conn = dbi.connect()
+    downvotesDict = queries.get_post_downvotes(conn,postid)
+    if downvotesDict['downvotes'] == None:
+        downvotes = 1
+        queries.update_post_downvotes(conn,postid,downvotes)
+        
+    else:
+        downvotes = downvotesDict['downvotes'] + 1
+        queries.update_post_downvotes(conn,postid,downvotes)
+    return redirect(url_for('home'))
+
+@app.route('/comment/<postid>', methods=['GET', 'POST'])
+def comment(postid):
+    conn = dbi.connect()
     if request.method == 'GET':
-        conn = dbi.connect()
+
         ### TO DO: Check if user is logged in and get their user id
         # for now assign random user
-        return render_template('comment-form.html', action= url_for('comment'))
-    
+        return render_template('comment-form.html', postid=postid)
+
+    else : # request.method == 'POST'
+        #retrieve information
+        #sessions[uid]
+        user = 1 #hardcoded for now
+        attachments = None 
+        upvotes = 0
+        downvotes = 0
+        #username = queries.username_from_uid(conn, uid)
+        time = datetime.now()
+        text = request.form['comment-text']
+
+         # check if essential information is present (text)
+        if text == "":
+            flash('Please provide content for your comment.')
+            return render_template('comment-form.html', postid=postid)
+        # upload comment
+        else:
+            commentid = queries.add_comment(conn, postid, time, user, text, attachments, upvotes, downvotes)
+            flash('Comment upload successful')
+            # go to post page
+            return redirect(url_for('view_post', postid=postid))
+
+@app.route('/upvote-comment/<postid>/<commentid>', methods=['GET', 'POST'])
+def comment_upvote(postid,commentid):
+    conn = dbi.connect()
+    upvotes = queries.get_comment_upvotes(conn,commentid)
+    upvotes = upvotes['upvotes'] + 1
+    queries.update_comment_upvotes(conn,commentid,upvotes)
+    return redirect(url_for('view_post', postid=postid))
+
+@app.route('/downvote-comment/<postid>/<commentid>', methods=['GET', 'POST'])
+def comment_downvote(postid,commentid):
+    conn = dbi.connect()
+    downvotes = queries.get_comment_downvotes(conn,commentid)
+    downvotes = downvotes['downvotes'] + 1
+    queries.update_comment_downvotes(conn,commentid,downvotes)
+    return redirect(url_for('view_post', postid=postid))
 
         
 @app.route('/upload/', methods=['GET','POST'])

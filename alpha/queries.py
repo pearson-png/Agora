@@ -238,6 +238,99 @@ def add_prof_post(conn, time, user, prof, prof_rating, text, attachments):
     curs.execute('''select last_insert_id() from posts''')
     return curs.fetchone() 
 
+def add_comment(conn, postid, time, user, text, attachments, upvotes, downvotes):
+    '''Add a new comment associated with a post to the database and returns the commentid'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''insert into comments(postid, time, user, text, attachments, upvotes, downvotes)
+                    values(%s,%s,%s,%s,%s,%s,%s)''', 
+                    [postid, time, user, text, attachments, upvotes, downvotes])
+    conn.commit()
+    curs.execute('''select last_insert_id() from comments''')
+    return curs.fetchone()
+
+def get_comments(conn, postid):
+    '''Returns a list of dictionaries of 50 most recent comments with same postid'''
+    '''IMPORTANT note: switch this to be with infinite scrolling later'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+        select * from comments
+        where postid = %s
+        order by time asc
+        limit 50''', [postid])
+    return curs.fetchall()
+
+def get_post_upvotes(conn,postid):
+    '''Gets upvotes for post with postid '''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+        select upvotes 
+        from posts
+        where postid = %s''', [postid])
+    return curs.fetchone()
+
+def update_post_upvotes(conn,postid,upvotes):
+    '''Updates posts table to increase upvote for post with postid'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute(''' 
+        UPDATE posts 
+        SET upvotes = %s 
+        WHERE postid = %s''', [upvotes, postid])
+    conn.commit()
+    
+def get_post_downvotes(conn,postid):
+    '''Gets downvotes for post with postid '''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+        select downvotes 
+        from posts
+        WHERE postid = %s''', [postid])
+    return curs.fetchone()
+
+def update_post_downvotes(conn,postid,downvotes):
+    '''Updates posts table to increase downvotes for post with postid'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute(''' 
+        UPDATE posts 
+        SET downvotes = %s 
+        WHERE postid = %s''', [downvotes, postid])
+    conn.commit()
+
+def get_comment_upvotes(conn,commentid):
+    '''Gets upvotes for comment with commentid '''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+        select upvotes 
+        from comments
+        where commentid = %s''', [commentid])
+    return curs.fetchone()
+
+def update_comment_upvotes(conn,commentid,upvotes):
+    '''Updates comment table to increase upvote for comment with commentid'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute(''' 
+        UPDATE comments 
+        SET upvotes = %s 
+        WHERE commentid = %s''', [upvotes, commentid])
+    conn.commit()
+    
+def get_comment_downvotes(conn,commentid):
+    '''Gets downvotes for comment with commentid '''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+        select downvotes 
+        from comments
+        where commentid = %s''', [commentid])
+    return curs.fetchone()
+
+def update_comment_downvotes(conn,commentid,downvotes):
+    '''Updates comment table to increase downvotes for comment with commentid'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute(''' 
+        UPDATE comments 
+        SET downvotes = %s 
+        WHERE commentid = %s''', [downvotes, commentid])
+    conn.commit()
+
 def check_username(name):
     '''Returns a dictionary of user info with the given username'''
     curs = dbi.dict_cursor(conn)
