@@ -259,12 +259,11 @@ def comment(postid):
 
     else : # request.method == 'POST'
         #retrieve information
-        #sessions[uid]
-        user = 1 #hardcoded for now
+        uid = session.get('uid')
         attachments = None 
         upvotes = 0
         downvotes = 0
-        #username = queries.username_from_uid(conn, uid)
+        user = queries.username_from_uid(conn, uid)
         time = datetime.now()
         text = request.form['comment-text']
 
