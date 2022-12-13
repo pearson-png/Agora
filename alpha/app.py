@@ -403,7 +403,6 @@ def professor(department, professor):
         return redirect(url_for('home'))
     posts = queries.find_prof_posts(conn, professor)
     rating = queries.find_prof_avgrating(conn, professor)
-    #rating = 5
     return render_template('professor.html', prof_name=name['name'], department=department, avg_rating=rating, posts=posts)
 
 @app.route('/course/<department>/<course>')

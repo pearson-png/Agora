@@ -1,3 +1,5 @@
+from flask import (Flask, render_template, make_response, url_for, request,
+                   redirect, flash, session, send_from_directory, jsonify)
 import cs304dbi as dbi
 import helper
 
@@ -198,7 +200,9 @@ def find_prof_avgrating(conn, pid):
     curs = dbi.dict_cursor(conn)
     curs.execute('''select avg(rating) as avg from prof_ratings 
                     where pid = %s''', [pid])
-    return (curs.fetchone())['avg']
+    avg = (curs.fetchone())['avg']
+    flash(avg)
+    return avg
 
 def find_course_avgrating(conn, courseid):
     '''Returns all posts about a given course'''
@@ -229,6 +233,16 @@ def add_post(conn, time, user, course, prof, prof_rating, course_rating, text, a
     values(%s,%s,%s,%s,%s,%s,%s,%s)''',
     [time, user, course, prof, prof_rating, course_rating, text, attachments])
     conn.commit()
+    curs.execute('''insert into prof_ratings(rating, user, pid)
+                    values(%s, %s, %s)
+                    on duplicate key update rating = %s''', 
+                    [prof_rating, user, prof, prof_rating])
+    conn.commit()
+    curs.execute('''insert into course_ratings(rating, user, courseid)
+                    values(%s, %s, %s)
+                    on duplicate key update rating = %s''', 
+                    [course_rating, user, course, course_rating])
+    conn.commit()
     curs.execute('''select last_insert_id() from posts''')
     return curs.fetchone() 
 
@@ -239,6 +253,11 @@ def add_course_post(conn, time, user, course, course_rating, text, attachments):
     values(%s,%s,%s,%s,%s,%s)''',
     [time, user, course, course_rating, text, attachments])
     conn.commit()
+    curs.execute('''insert into course_ratings(rating, user, courseid)
+                    values(%s, %s, %s)
+                    on duplicate key update rating = %s''', 
+                    [course_rating, user, course, course_rating])
+    conn.commit()
     curs.execute('''select last_insert_id() from posts''')
     return curs.fetchone()
 
@@ -248,6 +267,11 @@ def add_prof_post(conn, time, user, prof, prof_rating, text, attachments):
     curs.execute('''insert into posts(time, user, prof, prof_rating, text, attachments) 
     values(%s,%s,%s,%s,%s,%s)''',
     [time, user, prof, prof_rating, text, attachments])
+    conn.commit()
+    curs.execute('''insert into prof_ratings(rating, user, pid)
+                    values(%s, %s, %s)
+                    on duplicate key update rating = %s''', 
+                    [prof_rating, user, prof, prof_rating])
     conn.commit()
     curs.execute('''select last_insert_id() from posts''')
     return curs.fetchone() 
