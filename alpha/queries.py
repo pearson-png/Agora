@@ -228,6 +228,17 @@ def add_comment(conn, postid, time, user, text, attachments, upvotes, downvotes)
     curs.execute('''select last_insert_id() from comments''')
     return curs.fetchone()
 
+def get_comments(conn, postid):
+    '''Returns a list of dictionaries of 50 most recent comments with same postid'''
+    '''IMPORTANT note: switch this to be with infinite scrolling later'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+        select * from comments
+        where postid = %s
+        order by time asc
+        limit 50''', [postid])
+    return curs.fetchall()
+
 def check_username(name):
     '''Returns a dictionary of user info with the given username'''
     curs = dbi.dict_cursor(conn)

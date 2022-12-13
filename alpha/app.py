@@ -124,6 +124,7 @@ def view_post(postid):
         user = queries.post_user(conn, postid)['username']
         text = queries.post_text(conn,postid)['text']
         time = queries.post_time(conn,postid)['time']
+        comments = queries.get_comments(conn,postid)
 
         #course variables
         try:
@@ -150,25 +151,49 @@ def view_post(postid):
         
         #if there is no professor 
         if prof_name == None:
-            return render_template('view-post-course.html', action= url_for('view_post', postid=postid), 
-            user=user, course_name=course_name, course_code=course_code, course_rating=course_rating, text=text, time=time)
+            return render_template('view-post-course.html', postid=postid, user=user, course_name=course_name, 
+            course_code=course_code, course_rating=course_rating, text=text, time=time, comments=comments)
         #if there is no course
         elif course_code == None:
-            return render_template('view-post-prof.html', action= url_for('view_post', postid=postid), 
-            user=user, prof_name=prof_name, prof_rating=prof_rating, text=text, time=time)
+            return render_template('view-post-prof.html', postid=postid, user=user, prof_name=prof_name, 
+            prof_rating=prof_rating, text=text, time=time, comments=comments)
         #if there is a prof and a course
         else:
-            return render_template('view-post-prof-course.html', action= url_for('view_post', postid=postid), 
-            user=user, course_name=course_name, course_code=course_code, course_rating=course_rating, prof_name=prof_name, 
-            prof_rating=prof_rating, text=text, time=time) 
+            return render_template('view-post-prof-course.html', postid=postid, user=user, course_name=course_name, 
+            course_code=course_code, course_rating=course_rating, prof_name=prof_name, 
+            prof_rating=prof_rating, text=text, time=time, comments=comments) 
 
-@app.route('/comment/', methods=['GET', 'POST'])
-def comment():
+@app.route('/comment/<postid>', methods=['GET', 'POST'])
+def comment(postid):
+    conn = dbi.connect()
     if request.method == 'GET':
-        conn = dbi.connect()
+
         ### TO DO: Check if user is logged in and get their user id
         # for now assign random user
-        return render_template('comment-form.html', action= url_for('comment'))
+        return render_template('comment-form.html', postid=postid)
+
+    else : # request.method == 'POST'
+        #retrieve information
+        #sessions[uid]
+        user = 1 #hardcoded for now
+        attachments = None 
+        upvotes = 0
+        downvotes = 0
+        #username = queries.username_from_uid(conn, uid)
+        time = datetime.now()
+        text = request.form['comment-text']
+
+         # check if essential information is present (text)
+        if text == "":
+            flash('Please provide content for your comment.')
+            return render_template('comment-form.html', postid=postid)
+        # upload comment
+        else:
+            commentid = queries.add_comment(conn, postid, time, user, text, attachments, upvotes, downvotes)
+            flash('Comment upload successful')
+            # go to post page
+            return redirect(url_for('view_post', postid=postid))
+
     
 
         

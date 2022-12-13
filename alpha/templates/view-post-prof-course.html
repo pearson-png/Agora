@@ -44,16 +44,16 @@
     <p>Text: {{ text }}</p>
     <!-- How to fill in the post id here? -->
     
-    <a href="{{url_for('comment')}}">Leave a Comment</a> 
+    <a href="{{url_for('comment', postid=postid)}}">Leave a Comment</a> 
 </div>
-<!-- Make this usable
+
 {% for comment in comments %}
 <div class="card">  
-    <h2> {{ post.prof }} {{ post.course }} </h2>
-    <h5>{{ post.user }} {{ post.time }}</h5>
-    <p>{{ post.text }}</p>
+    <h3>Posted by: {{ comment.user }} | At: {{ comment.time }}</h3>
+    <p>Text: {{ comment.text }}</p>
+    <h3>Upvotes: {{ comment.upvotes }} | Downvotes: {{ comment.downvotes }} </h3>
 </div>
-{% endfor %} -->
+{% endfor %}
 
 {% endblock %}
 
