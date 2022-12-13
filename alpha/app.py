@@ -389,7 +389,7 @@ def department(department):
     conn = dbi.connect()
     course_list = queries.find_dept_course(conn, department)
     dept_name = queries.find_dept_name(conn, department)
-    if course_list == None:
+    if course_list == None or dept_name ==None:
         flash("No matching courses found")
         return redirect(url_for('home'))
     return render_template('department.html', course_list=course_list, abbrv=department, name=dept_name['name'])
@@ -430,19 +430,21 @@ def course_section(department, professor, course):
     #rating = 5
     return render_template('course-section.html', code=course_info['code'], course=course_info['title'], prof=prof_info['name'], department=course_info['dept'], posts=posts)
 
-@app.route('/change-username', methods=['POST'])
+@app.route('/change-username', methods=['GET','POST'])
 def change_username():
+    conn = dbi.connect()
     #get uid
     uid = session.get('uid')
     #get new name
     new_name = helper.random_username()
     #check if name exist
-    check = queries.check_username(new_name)
+    check = queries.check_username(conn, new_name)
     #if not none, the name exists, try again until you get a free name
     while check != None:
         new_name = helper.random_username()
-        check = queries.check_username(uid, new_name)
-    queries.update_username(new_name)
+        check = queries.check_username(conn, new_name)
+    queries.update_username(conn, uid, new_name)
+    flash('Your username has been changed.')
     return redirect(url_for('home'))
 
 @app.before_first_request
