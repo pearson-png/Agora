@@ -42,7 +42,7 @@
     <h5>Posted by: {{ user }} | At: {{ time }}</h5>
     <p>Text: {{ text }}</p>
     <!-- How to fill in the post id here? -->
-    <a href="{{url_for('comment')}}">Leave a Comment</a> 
+    <a href="{{url_for('comment', postid=postid)}}">Leave a Comment</a> 
 </div>
 
 {% for comment in comments %}
