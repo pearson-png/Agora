@@ -285,13 +285,21 @@ def course(department, course):
     posts = queries.find_course_posts(conn, course)
     rating = queries.find_course_avgrating(conn, course)
     #rating = 5
-    return render_template('course.html', code=course_info['code'], course=course_info['title'], department=course_info['dept'], avg_rating=rating, posts=posts)
-
+    return render_template('course.html', code=course_info['courseid'], course=course_info['title'], department=course_info['dept'], avg_rating=rating, posts=posts)
+'''
 @app.route('/course-section/<department>/<professor>/<course>')
 def course_section(department, professor, course):
     #placeholder for now
+    conn = dbi.connect()
+    course_info = queries.find_course_info(conn, department,professor,course)
+    if course_info==None:
+        flash('Department and course don\'t match, try again.')
+        return redirect(url_for('home'))
+    posts = queries.find_course_posts(conn, course)
+    rating = queries.find_course_avgrating(conn, course)
+    #rating = 5
     return redirect(url_for('home'))
-
+'''
 @app.route('/change-username', methods=['POST'])
 def change_username():
     #get uid

@@ -146,6 +146,15 @@ def find_course_info(conn, department,courseid):
                     where dept=%s and courseid=%s''', [department,courseid])
     return curs.fetchone()
 
+def find_course_sections(conn, department, courseid, pid):
+    '''Returns a list of dictionaries of courses in
+    a given department'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+        select courseid, title, code from courses where
+        dept = %s and ''', [department])
+    return curs.fetchall()
+
 def find_prof_posts(conn, pid):
     '''Returns all posts about a given professor'''
     curs = dbi.dict_cursor(conn)
