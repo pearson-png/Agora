@@ -144,7 +144,8 @@ def find_prof_name(conn, department,pid):
 
 def search_course(conn, dept, query):
     curs = dbi.dict_cursor(conn)
-    query_string = '%' + query.lower() + '%' # create string for use in wildcard
+    query_string = '%' + query.lower() + '%' # create string for use in 
+    wildcard
     if dept =="0":
         curs.execute("""select dept, courseid, title, code
                         from courses 
@@ -152,7 +153,8 @@ def search_course(conn, dept, query):
     else:
         curs.execute("""select dept, courseid, title, code
                         from courses 
-                        where lower(title) like %s and dept=%s""", [query_string, dept]) 
+                        where lower(title) like %s and dept=%s""", 
+                        [query_string, dept]) 
     return curs.fetchall()
 
 def find_dept_course(conn, dept):
@@ -192,7 +194,8 @@ def find_course_posts(conn, courseid):
 def find_course_section_posts(conn, courseid, pid):
     '''Returns all posts about a given course'''
     curs = dbi.dict_cursor(conn)
-    curs.execute('''select * from posts where course = %s and prof = %s''', [courseid, pid])
+    curs.execute('''select * from posts where course = %s and prof = %s''',
+    [courseid, pid])
     return curs.fetchall()
 
 def find_prof_avgrating(conn, pid):
@@ -226,10 +229,13 @@ def username_from_uid(conn, uid):
         select username from users where uid = %s''', [uid])
     return curs.fetchone()
 
-def add_post(conn, time, user, course, prof, prof_rating, course_rating, text, attachments):
-    '''Add a new post about course and professor to the database and returns the postid'''
+def add_post(conn, time, user, course, prof, prof_rating, course_rating, text,
+ attachments):
+    '''Add a new post about course and professor to the database and returns
+    the postid'''
     curs = dbi.dict_cursor(conn)
-    curs.execute('''insert into posts(time, user, course, prof, prof_rating, course_rating, text, attachments) 
+    curs.execute('''insert into posts(time, user, course, prof, prof_rating,
+    course_rating, text, attachments) 
     values(%s,%s,%s,%s,%s,%s,%s,%s)''',
     [time, user, course, prof, prof_rating, course_rating, text, attachments])
     conn.commit()
@@ -249,7 +255,8 @@ def add_post(conn, time, user, course, prof, prof_rating, course_rating, text, a
 def add_course_post(conn, time, user, course, course_rating, text, attachments):
     '''Add a new post about a course to the database and returns the postid'''
     curs = dbi.dict_cursor(conn)
-    curs.execute('''insert into posts(time, user, course, course_rating, text, attachments) 
+    curs.execute('''insert into posts(time, user, course, course_rating, text,
+    attachments) 
     values(%s,%s,%s,%s,%s,%s)''',
     [time, user, course, course_rating, text, attachments])
     conn.commit()
@@ -262,9 +269,11 @@ def add_course_post(conn, time, user, course, course_rating, text, attachments):
     return curs.fetchone()
 
 def add_prof_post(conn, time, user, prof, prof_rating, text, attachments):
-    '''Add a new post about a professor to the database and returns the postid'''
+    '''Add a new post about a professor to the database and returns the 
+    postid'''
     curs = dbi.dict_cursor(conn)
-    curs.execute('''insert into posts(time, user, prof, prof_rating, text, attachments) 
+    curs.execute('''insert into posts(time, user, prof, prof_rating, text,
+    attachments) 
     values(%s,%s,%s,%s,%s,%s)''',
     [time, user, prof, prof_rating, text, attachments])
     conn.commit()
@@ -277,18 +286,23 @@ def add_prof_post(conn, time, user, prof, prof_rating, text, attachments):
     return curs.fetchone() 
 
 
-def add_comment(conn, postid, time, user, text, attachments, upvotes, downvotes):
-    '''Add a new comment associated with a post to the database and returns the commentid'''
+def add_comment(conn, postid, time, user, text, attachments, upvotes, 
+downvotes):
+    '''Add a new comment associated with a post to the database and returns the
+    commentid'''
     curs = dbi.dict_cursor(conn)
-    curs.execute('''insert into comments(postid, time, user, text, attachments, upvotes, downvotes)
+    curs.execute('''insert into comments(postid, time, user, text, attachments,
+    upvotes, downvotes)
                     values(%s,%s,%s,%s,%s,%s,%s)''', 
-                    [postid, time, user, text, attachments, upvotes, downvotes])
+                    [postid, time, user, text, attachments, upvotes, 
+                    downvotes])
     conn.commit()
     curs.execute('''select last_insert_id() from comments''')
     return curs.fetchone()
 
 def get_comments(conn, postid):
-    '''Returns a list of dictionaries of 50 most recent comments with same postid'''
+    '''Returns a list of dictionaries of 50 most recent comments with same
+    postid'''
     '''IMPORTANT note: switch this to be with infinite scrolling later'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
@@ -362,7 +376,8 @@ def get_comment_downvotes(conn,commentid):
     return curs.fetchone()
 
 def update_comment_downvotes(conn,commentid,downvotes):
-    '''Updates comment table to increase downvotes for comment with commentid'''
+    '''Updates comment table to increase downvotes for comment with
+    commentid'''
     curs = dbi.dict_cursor(conn)
     curs.execute(''' 
         UPDATE comments 

@@ -66,8 +66,10 @@ def home():
         ##options here
         if dept == "0":
             if search != 'None':
-                return redirect(url_for('course_search', department=dept, query=search))
-            #if no dept chosen, and no search entered, reload the homepage no matter other fields
+                return redirect(url_for('course_search', department=dept, 
+                query=search))
+            #if no dept chosen, and no search entered, reload the homepage no 
+            # matter other fields
             departments = queries.find_depts(conn)
             professors = {}
             courses = {}
@@ -78,18 +80,21 @@ def home():
             professors = professors, posts = posts)
         elif prof == "0" and course == "0":
             if search != 'None':
-                return redirect(url_for('course_search', department=dept, query=search))
+                return redirect(url_for('course_search', department=dept, 
+                query=search))
             #if only department chosen, direct to dept page
             return redirect(url_for('department', department=dept))
         elif course == "0" and prof != "0":
             #if only prof chosen, direct to prof page
-            return redirect(url_for('professor', department=dept, professor=prof))
+            return redirect(url_for('professor', department=dept, 
+            professor=prof))
         elif course != "0" and prof == "0":
             #if only course chosen, direct to course page
             return redirect(url_for('course', department=dept, course=course))
         else:
             #if all three were chosen, give specific prof and course page
-            return redirect(url_for('course_section', department=dept, professor=prof, course=course))
+            return redirect(url_for('course_section', department=dept,
+            professor=prof, course=course))
 
 @app.route('/search/<department>/<query>', methods=['GET'])
 def course_search(department, query):
@@ -116,11 +121,13 @@ def update_dropdown():
     # create the values in the dropdown as a html string
     html_string1 = '<option value="0">All</option>'
     for professor in professors:
-        html_string1 += '<option value="{}">{}</option>'.format(professor['pid'], professor['name'])
+        html_string1 += '<option value="{}">{}</option>'.format(\
+            professor['pid'], professor['name'])
 
     html_string2 = '<option value="0">All</option>'
     for course in courses:
-        html_string2 += '<option value="{}">{}:{}</option>'.format(course['courseid'], course['code'], course['title'])
+        html_string2 += '<option value="{}">{}:{}</option>'.format(\
+            course['courseid'], course['code'], course['title'])
 
     return jsonify(html_string1=html_string1, html_string2=html_string2)
 
@@ -155,7 +162,8 @@ def after_login():
         flash('Welcome back, you are logged in.')
         return redirect(url_for('home'))
     # register if scott or a student
-    elif email == 'scott.anderson@wellesley.edu' or session['CAS_ATTRIBUTES']['cas:isStudent'] == 'Y':
+    elif email == 'scott.anderson@wellesley.edu' or session['CAS_ATTRIBUTES']\
+        ['cas:isStudent'] == 'Y':
         # print('registering user and redirecting to homepage')
         flash('You are now registered with Agora!')
         uid_dic = queries.register_user(conn, email)
@@ -195,7 +203,8 @@ def view_post(postid):
         except TypeError:
             course_name = None
         try:
-            course_rating = queries.post_course_rating(conn, postid)['course_rating']
+            course_rating = queries.post_course_rating(conn, postid)\
+                ['course_rating']
         except TypeError:
             course_rating = None
         #professor variables
@@ -210,16 +219,20 @@ def view_post(postid):
         
         #if there is no professor 
         if prof_name == None:
-            return render_template('view-post-course.html', postid=postid, user=user, course_name=course_name, 
-            course_code=course_code, course_rating=course_rating, text=text, time=time, comments=comments)
+            return render_template('view-post-course.html', postid=postid, 
+            user=user, course_name=course_name, 
+            course_code=course_code, course_rating=course_rating, text=text,
+            time=time, comments=comments)
         #if there is no course
         elif course_code == None:
-            return render_template('view-post-prof.html', postid=postid, user=user, prof_name=prof_name, 
-            prof_rating=prof_rating, text=text, time=time, comments=comments)
+            return render_template('view-post-prof.html', postid=postid, 
+            user=user, prof_name=prof_name, prof_rating=prof_rating, text=text,
+            time=time, comments=comments)
         #if there is a prof and a course
         else:
-            return render_template('view-post-prof-course.html', postid=postid, user=user, course_name=course_name, 
-            course_code=course_code, course_rating=course_rating, prof_name=prof_name, 
+            return render_template('view-post-prof-course.html', postid=postid,
+            user=user, course_name=course_name, course_code=course_code,
+            course_rating=course_rating, prof_name=prof_name, 
             prof_rating=prof_rating, text=text, time=time, comments=comments) 
 
 @app.route('/upvote-post/<postid>', methods=['GET', 'POST'])
@@ -260,10 +273,13 @@ def comment(postid):
     else : # request.method == 'POST'
         #retrieve information
         uid = session.get('uid')
+        print('uid in comment fxn: ',uid)
         attachments = None 
         upvotes = 0
         downvotes = 0
         user = queries.username_from_uid(conn, uid)
+        print('user var: ',user)
+        # user = user['username']
         time = datetime.now()
         text = request.form['comment-text']
 
@@ -273,7 +289,8 @@ def comment(postid):
             return render_template('comment-form.html', postid=postid)
         # upload comment
         else:
-            commentid = queries.add_comment(conn, postid, time, user, text, attachments, upvotes, downvotes)
+            commentid = queries.add_comment(conn, postid, time, uid, text, 
+            attachments, upvotes, downvotes)
             flash('Comment upload successful')
             # go to post page
             return redirect(url_for('view_post', postid=postid))
@@ -318,7 +335,8 @@ def upload():
         course_rating = request.form['course-rating']
         review_text = request.form['review-text']
 
-        ### TO DO: add pdf table to database; get pdf from form and append to database
+        ### TO DO: add pdf table to database; get pdf from form and append to
+        #  database
         pdf = request.files['pdf']
         print(type(pdf))
 
@@ -326,21 +344,24 @@ def upload():
         if dept == "":
             flash('Please choose a department')
             return render_template('post-form.html', title='Create a Post',
-            professors = professors, courses = courses, departments = departments)
+            professors = professors, courses = courses, 
+            departments = departments)
         if profid == "" and courseid == "":
             flash('Please enter a Professor and/or Course.')
             return render_template('post-form.html', title='Create a Post',
-            professors = professors, courses = courses, departments = departments)
+            professors = professors, courses = courses, 
+            departments = departments)
         elif profid == "" and prof_rating != "":
             flash('Please provide a Professor to rate or remove the \
                     Professor Rating.')
             return render_template('post-form.html', title='Create a Post',
-            professors = professors, courses = courses, departments = departments)
+            professors = professors, courses = courses, 
+            departments = departments)
         elif courseid == "" and course_rating != "":
             flash('Please provide a Course to rate or remove the \
                     Course Rating.')
             return render_template('post-form.html', title='Create a Post',
-                                    professors = professors, courses = courses, 
+                                    professors = professors, courses = courses,
                                     departments = departments)
         elif (prof_rating == "" and course_rating == "" and review_text 
         == "" and not request.files.get('pdf', None)):
@@ -351,14 +372,18 @@ def upload():
 
         # upload post
         if profid == '':
-            postid = queries.add_course_post(conn, time, uid, courseid, course_rating, review_text, pdf)
+            postid = queries.add_course_post(conn, time, uid, courseid, 
+            course_rating, review_text, pdf)
         elif courseid == '':
-            postid = queries.add_prof_post(conn, time, uid, profid, prof_rating, review_text, pdf)
+            postid = queries.add_prof_post(conn, time, uid, profid, prof_rating
+            , review_text, pdf)
         else:
-            postid = queries.add_post(conn, time, uid, courseid, profid, prof_rating, course_rating, review_text, pdf)
+            postid = queries.add_post(conn, time, uid, courseid, profid, 
+            prof_rating, course_rating, review_text, pdf)
         flash('Upload successful')
         # go to post page
-        return redirect(url_for('view_post', postid=postid['last_insert_id()']))
+        return redirect(url_for('view_post', 
+        postid=postid['last_insert_id()']))
 
 @app.route('/update_upload_form')
 def update_upload_form():
@@ -375,11 +400,13 @@ def update_upload_form():
     # create the values in the dropdown as a html string
     html_string1 = '<option value="">Choose One</option>'
     for professor in professors:
-        html_string1 += '<option value="{}">{}</option>'.format(professor['pid'], professor['name'])
+        html_string1 += '<option value="{}">{}</option>'.format(
+            professor['pid'], professor['name'])
 
     html_string2 = '<option value="">Choose One</option>'
     for course in courses:
-        html_string2 += '<option value="{}">{}:{}</option>'.format(course['courseid'], course['code'], course['title'])
+        html_string2 += '<option value="{}">{}:{}</option>'.format(
+            course['courseid'], course['code'], course['title'])
 
     return jsonify(html_string1=html_string1, html_string2=html_string2)
 
@@ -391,7 +418,8 @@ def department(department):
     if course_list == None or dept_name ==None:
         flash("No matching courses found")
         return redirect(url_for('home'))
-    return render_template('department.html', course_list=course_list, abbrv=department, name=dept_name['name'])
+    return render_template('department.html', course_list=course_list, 
+    abbrv=department, name=dept_name['name'])
 
 @app.route('/professor/<department>/<professor>')
 def professor(department, professor):
@@ -402,7 +430,8 @@ def professor(department, professor):
         return redirect(url_for('home'))
     posts = queries.find_prof_posts(conn, professor)
     rating = queries.find_prof_avgrating(conn, professor)
-    return render_template('professor.html', prof_name=name['name'], department=department, avg_rating=rating, posts=posts)
+    return render_template('professor.html', prof_name=name['name'], 
+    department=department, avg_rating=rating, posts=posts)
 
 @app.route('/course/<department>/<course>')
 def course(department, course):
@@ -414,7 +443,9 @@ def course(department, course):
     posts = queries.find_course_posts(conn, course)
     rating = queries.find_course_avgrating(conn, course)
     #rating = 5
-    return render_template('course.html', code=course_info['courseid'], course=course_info['title'], department=course_info['dept'], avg_rating=rating, posts=posts)
+    return render_template('course.html', code=course_info['courseid'], course=
+    course_info['title'], department=course_info['dept'], avg_rating=rating,
+    posts=posts)
 
 @app.route('/course-section/<department>/<professor>/<course>')
 def course_section(department, professor, course):
@@ -426,7 +457,9 @@ def course_section(department, professor, course):
         return redirect(url_for('home'))
     posts = queries.find_course_section_posts(conn, course, professor)
     #rating = 5
-    return render_template('course-section.html', code=course_info['code'], course=course_info['title'], prof=prof_info['name'], department=course_info['dept'], posts=posts)
+    return render_template('course-section.html', code=course_info['code'],
+    course=course_info['title'], prof=prof_info['name'], 
+    department=course_info['dept'], posts=posts)
 
 @app.route('/change-username', methods=['GET','POST'])
 def change_username():
@@ -464,7 +497,8 @@ if __name__ == '__main__':
     app.debug = True
     app.run('0.0.0.0',port)
 
-#code unnecessary with current tagging system, needed if prof-course relation enforced
+#code unnecessary with current tagging system, needed if prof-course relation
+#  enforced
 # @app.route('/update_professors')
 # def update_professors():
 #     conn = dbi.connect()
@@ -478,7 +512,8 @@ if __name__ == '__main__':
 #     # create the values in the dropdown as a html string
 #     html_string1 = '<option value="0">All</option>'
 #     for professor in professors:
-#         html_string1 += '<option value="{}">{}</option>'.format(professor['pid'], professor['name'])
+#         html_string1 += '<option value="{}">{}</option>'.format(
+#           professor['pid'], professor['name'])
 
 #     return jsonify(html_string1=html_string1)
 
@@ -495,6 +530,7 @@ if __name__ == '__main__':
 #     # create the values in the dropdown as a html string
 #     html_string2 = '<option value="0">All</option>'
 #     for course in courses:
-#         html_string2 += '<option value="{}">{}:{}</option>'.format(course['courseid'], course['code'], course['title'])
+#         html_string2 += '<option value="{}">{}:{}</option>'.format(
+#           course['courseid'], course['code'], course['title'])
 
 #     return jsonify(html_string2=html_string2)
