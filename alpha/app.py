@@ -194,7 +194,21 @@ def comment(postid):
             # go to post page
             return redirect(url_for('view_post', postid=postid))
 
-    
+@app.route('/upvote-comment/<postid>/<commentid>', methods=['GET', 'POST'])
+def comment_upvote(postid,commentid):
+    conn = dbi.connect()
+    upvotes = queries.get_comment_upvotes(conn,commentid)
+    upvotes = upvotes['upvotes'] + 1
+    queries.update_comment_upvote(conn,commentid,upvotes)
+    return redirect(url_for('view_post', postid=postid))
+
+@app.route('/downvote-comment/<postid>/<commentid>', methods=['GET', 'POST'])
+def comment_downvote(postid,commentid):
+    conn = dbi.connect()
+    downvotes = queries.get_comment_downvotes(conn,commentid)
+    downvotes = downvotes['downvotes'] + 1
+    queries.update_comment_downvotes(conn,commentid,downvotes)
+    return redirect(url_for('view_post', postid=postid))
 
         
 @app.route('/upload/', methods=['GET','POST'])

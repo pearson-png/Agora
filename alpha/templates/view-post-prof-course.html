@@ -51,7 +51,8 @@
 <div class="card">  
     <h3>Posted by: {{ comment.user }} | At: {{ comment.time }}</h3>
     <p>Text: {{ comment.text }}</p>
-    <h3>Upvotes: {{ comment.upvotes }} | Downvotes: {{ comment.downvotes }} </h3>
+    <h3><a href="{{url_for('comment_upvote', postid=postid, commentid=comment.commentid)}}">Upvote: </a> {{ comment.upvotes }} | 
+      <a href="{{url_for('comment_downvote', postid=postid, commentid=comment.commentid)}}">Downvote: </a> {{ comment.downvotes }} </h3>
 </div>
 {% endfor %}
 

@@ -239,6 +239,42 @@ def get_comments(conn, postid):
         limit 50''', [postid])
     return curs.fetchall()
 
+def get_comment_upvotes(conn,commentid):
+    '''Gets upvotes for comment with commentid '''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+        select upvotes 
+        from comments
+        where commentid = %s''', [commentid])
+    return curs.fetchone()
+
+def update_comment_upvote(conn,commentid,upvotes):
+    '''Updates comment table to increase upvote for comment with commentid'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute(''' 
+        UPDATE comments 
+        SET upvotes = %s 
+        WHERE commentid = %s''', [upvotes, commentid])
+    conn.commit()
+    
+def get_comment_downvotes(conn,commentid):
+    '''Gets downvotes for comment with commentid '''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+        select downvotes 
+        from comments
+        where commentid = %s''', [commentid])
+    return curs.fetchone()
+
+def update_comment_downvotes(conn,commentid,downvotes):
+    '''Updates comment table to increase downvotes for comment with commentid'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute(''' 
+        UPDATE comments 
+        SET downvotes = %s 
+        WHERE commentid = %s''', [downvotes, commentid])
+    conn.commit()
+
 def check_username(name):
     '''Returns a dictionary of user info with the given username'''
     curs = dbi.dict_cursor(conn)
