@@ -275,15 +275,6 @@ def update_post_downvotes(conn,postid,downvotes):
         WHERE postid = %s''', [downvotes, postid])
     conn.commit()
 
-# def first_post_upvotes(conn,postid,upvote):
-#     '''updates first upvote into posts table'''
-#     curs = dbi.dict_cursor(conn)
-#     curs.execute(''' 
-#         UPDATE posts(upvotes) 
-#         values(%s)''', [upvote,postid])
-#     conn.commit()
-
-
 def get_comment_upvotes(conn,commentid):
     '''Gets upvotes for comment with commentid '''
     curs = dbi.dict_cursor(conn)
