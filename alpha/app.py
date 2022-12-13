@@ -35,6 +35,8 @@ app.config['CAS_VALIDATE_ROUTE'] = '/module.php/casserver/serviceValidate.php'
 app.config['CAS_AFTER_LOGIN'] = 'after_login'
 app.config['CAS_AFTER_LOGOUT'] = 'logout'
 
+# to do: relplace hardcoded port numbers w port variable
+
 @app.route('/', methods=['GET','POST'])
 def home():
     # check if logged in
@@ -136,8 +138,14 @@ def after_login():
     conn = dbi.connect()
     email = session['CAS_ATTRIBUTES']['cas:mail']
     # print('email: ',email)
-    uid_dic = queries.check_user_registration(conn, email) 
-    uid = uid_dic['uid']
+    try: 
+        uid_dic = queries.check_user_registration(conn, email) 
+        uid = uid_dic['uid']
+        print('uid: ',uid)
+    except TypeError:
+        uid = None
+        print('uid: ',uid)
+    
     # print('uid: ',uid)
     
     # if the user is already registered, set cookie and redirect to home
