@@ -32,11 +32,16 @@ app.config['CAS_SERVER'] = 'https://login.wellesley.edu:443'
 app.config['CAS_LOGIN_ROUTE'] = '/module.php/casserver/cas.php/login'
 app.config['CAS_LOGOUT_ROUTE'] = '/module.php/casserver/cas.php/logout'
 app.config['CAS_VALIDATE_ROUTE'] = '/module.php/casserver/serviceValidate.php'
-app.config['CAS_AFTER_LOGIN'] = 'login'
+app.config['CAS_AFTER_LOGIN'] = 'home'
 app.config['CAS_AFTER_LOGOUT'] = 'login'
 
 @app.route('/', methods=['GET','POST'])
 def home():
+    # check if logged in
+    print('Session keys: ',list(session.keys()))
+    for k in list(session.keys()):
+        print(k,' => ',session[k])
+        
     conn = dbi.connect()
     if request.method == 'GET':
         #gets homepage with dropdown menu of all choices and recent posts
@@ -106,7 +111,7 @@ def update_dropdown():
 def login():
     if 'CAS_USERNAME' in session:
         return redirect(url_for('home'))
-    return render_template('login.html', title = 'Login')
+    return render_template('login.html', title = 'Login',cas_attributes = session.get('CAS_ATTRIBUTES'))
 
 
 @app.route('/view/<postid>', methods=['GET','POST'])
