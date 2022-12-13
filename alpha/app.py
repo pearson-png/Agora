@@ -41,7 +41,7 @@ app.config['CAS_AFTER_LOGOUT'] = 'logout'
 def home():
     # check if logged in
     if len(session.keys()) == 0:
-        return redirect('http://cs.wellesley.edu:1950/login/')
+        return redirect('http://cs.wellesley.edu:1947/login/')
 
     # uid = session.get('uid')
     conn = dbi.connect()
@@ -165,13 +165,13 @@ def after_login():
         return redirect(url_for('home'))
     else: 
         flash('You must be a Wellesley College student to use Agora.')
-        return redirect('http://cs.wellesley.edu:1950/login/')
+        return redirect('http://cs.wellesley.edu:1947/login/')
 
 @app.route('/logout/')
 def logout():
     flash('You have been logged out.')
     # return redirect(url_for('cas.login'))
-    return redirect('http://cs.wellesley.edu:1950/login/')
+    return redirect('http://cs.wellesley.edu:1947/login/')
 
 @app.route('/view/<postid>', methods=['GET','POST'])
 #view individual posts
