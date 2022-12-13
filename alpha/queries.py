@@ -1,4 +1,5 @@
 import cs304dbi as dbi
+import helper
 
 def find_depts(conn):
     '''Returns a list of dictionaries of all departments'''
@@ -218,47 +219,48 @@ def add_prof_post(conn, time, user, prof, prof_rating, text, attachments):
     curs.execute('''select last_insert_id() from posts''')
     return curs.fetchone() 
 
-def check_username(name):
+def check_username(conn,name):
     '''Returns a dictionary of user info with the given username'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''select * from users where username = %s''',
     [name])
     return curs.fetchone() 
 
-def update_username(uid, name):
+def update_username(conn, uid, name):
     '''Updates the username for the given uid'''
     curs = dbi.dict_cursor(conn)
-    curs.execute('''UPDATE users SET username = %s 
+    curs.execute('''UPDATE users 
+    SET username = %s 
     WHERE uid = %s''', [name, uid])
     conn.commit()
 
-# use code below if we don't get the course browser csv
+def check_user_registration(conn, email):
+    '''
+    Checks if a person is registered in the database using a given email.
+    '''
+    curs = dbi.dict_cursor(conn)
+    sql = '''
+    select uid 
+    from users
+    where email = %s
+    '''
+    curs.execute(sql, [email])
+    return curs.fetchone()
 
-# def add_professor(conn, name, dept):
-#     '''Adds a professor to the database and returns pid'''
-#     # add prof
-#     curs = dbi.dict_cursor(conn)
-#     curs.execute('''
-#     insert into professors(name, dept) values(%s,%s)''',[name, dept])
-#     conn.commit()
-#     # get pid
-#     curs.execute('''
-#     select last_insert_id() from professors''')
-#     return curs.fetchone()    
-
-# def add_course(conn, name, code, dept):
-#     '''Adds a course to the database and returns courseid'''
-#     curs = dbi.dict_cursor(conn)
-#     curs.execute('''
-#     insert into courses(title, code, dept) values(%s,%s,%s)''',[name, code, dept])
-#     conn.commit()
-#     curs.execute('''
-#     select last_insert_id() from courses''')
-#     return curs.fetchone()  
-
-# def add_department(conn, name, abbrv):
-#     '''Add a department to the database'''
-#     curs = dbi.dict_cursor(conn)
-#     curs.execute('''
-#     insert into departments(name, abbrv) values(%s,%s)''',[name, abbrv])
-#     conn.commit()
+def register_user(conn, email):
+    '''
+    Adds a new user to the database and returns the new uid.
+    '''
+    # make a random username
+    un = helper.random_username()
+    # add the user
+    curs = dbi.dict_cursor(conn)
+    sql = '''
+    insert into users (username, email)
+    values (%s, %s)
+    '''
+    curs.execute(sql, [un, email])
+    conn.commit()
+    # get the uid
+    curs.execute('''select last_insert_id() from posts''')
+    return curs.fetchone()

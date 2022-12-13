@@ -32,16 +32,16 @@ app.config['CAS_SERVER'] = 'https://login.wellesley.edu:443'
 app.config['CAS_LOGIN_ROUTE'] = '/module.php/casserver/cas.php/login'
 app.config['CAS_LOGOUT_ROUTE'] = '/module.php/casserver/cas.php/logout'
 app.config['CAS_VALIDATE_ROUTE'] = '/module.php/casserver/serviceValidate.php'
-app.config['CAS_AFTER_LOGIN'] = 'home'
-app.config['CAS_AFTER_LOGOUT'] = 'login'
+app.config['CAS_AFTER_LOGIN'] = 'after_login'
+app.config['CAS_AFTER_LOGOUT'] = 'logout'
 
 @app.route('/', methods=['GET','POST'])
 def home():
     # check if logged in
-    print('Session keys: ',list(session.keys()))
-    for k in list(session.keys()):
-        print(k,' => ',session[k])
-        
+    if len(session.keys()) == 0:
+        return redirect('http://cs.wellesley.edu:1950/login/')
+
+    # uid = session.get('uid')
     conn = dbi.connect()
     if request.method == 'GET':
         #gets homepage with dropdown menu of all choices and recent posts
@@ -109,10 +109,46 @@ def update_dropdown():
 
 @app.route('/login/')
 def login():
-    if 'CAS_USERNAME' in session:
-        return redirect(url_for('home'))
-    return render_template('login.html', title = 'Login',cas_attributes = session.get('CAS_ATTRIBUTES'))
+    return render_template('login.html', title = 'Title')
 
+@app.route('/after_login/')
+def after_login():
+    # if uid already in session, can delete later but shows functionality
+    if session.get('uid'): 
+        flash('redirecting from login, uid already in session')
+        return redirect(url_for('home'))
+
+    conn = dbi.connect()
+    email = session['CAS_ATTRIBUTES']['cas:mail']
+    # print('email: ',email)
+    uid_dic = queries.check_user_registration(conn, email) 
+    uid = uid_dic['uid']
+    # print('uid: ',uid)
+    
+    # if the user is already registered, set cookie and redirect to home
+    if uid: 
+        # print('redirecting from after_login, user already registered')
+        session['uid'] = uid
+        flash('Welcome back, you are logged in.')
+        return redirect(url_for('home'))
+    # register if scott or a student
+    elif email == 'scott.anderson@wellesley.edu' or session['CAS_ATTRIBUTES']['cas:isStudent'] == 'Y':
+        # print('registering user and redirecting to homepage')
+        flash('You are now registered with Agora!')
+        uid_dic = queries.register_user(conn, email)
+        uid = uid_dic['last_insert_id()']
+        # print('new user uid: ', uid)
+        session['uid'] = uid
+        return redirect(url_for('home'))
+    else: 
+        flash('You must be a Wellesley College student to use Agora.')
+        return redirect('http://cs.wellesley.edu:1950/login/')
+
+@app.route('/logout/')
+def logout():
+    flash('You have been logged out.')
+    # return redirect(url_for('cas.login'))
+    return redirect('http://cs.wellesley.edu:1950/login/')
 
 @app.route('/view/<postid>', methods=['GET','POST'])
 #view individual posts
@@ -175,11 +211,7 @@ def comment():
 @app.route('/upload/', methods=['GET','POST'])
 def upload():
     conn = dbi.connect()
-    ### TO DO: Check if user is logged in and get their user id
-    # for now assign random user
-    people = queries.find_users(conn)
-    #uid = random.choice([person['uid'] for person in people])
-    uid = 1
+    uid = session.get('uid')
     professors = {}
     courses = {}
     departments = queries.find_depts(conn)
@@ -300,7 +332,7 @@ def course_section(department, professor, course):
 @app.route('/change-username', methods=['POST'])
 def change_username():
     #get uid
-    uid = session['uid']
+    uid = session.get('uid')
     #get new name
     new_name = helper.random_username()
     #check if name exist

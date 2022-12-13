@@ -13,7 +13,7 @@ def get_random_word(file_name):
     the word will start with capital letter''' 
 
     file = open(file_name) 
-    words = [] 
+    word_list = [] 
     #creates a list of all the read words from the file
     for line in file: 
         line = line.strip()
