@@ -55,9 +55,12 @@ def home():
         dept = filters['department']
         prof = filters['professor']
         course = filters['course']
+        search = filters['search']
         ##options here
         if dept == "0":
-            #if no dept chosen, reload the homepage no matter other fields
+            if search != None:
+                return redirect(url_for('course_search', department=dept, query=search))
+            #if no dept chosen, and no search entered, reload the homepage no matter other fields
             departments = queries.find_depts(conn)
             professors = {}
             courses = {}
@@ -67,6 +70,8 @@ def home():
             departments = departments, courses = courses, 
             professors = professors, posts = posts)
         elif prof == "0" and course == "0":
+            if search != None:
+                return redirect(url_for('course_search', department=dept, query=search))
             #if only department chosen, direct to dept page
             return redirect(url_for('department', department=dept))
         elif course == "0" and prof != "0":
@@ -78,6 +83,16 @@ def home():
         else:
             #if all three were chosen, give specific prof and course page
             return redirect(url_for('course_section', department=dept, professor=prof, course=course))
+
+@app.route('/search/<department>/<query>', methods=['GET'])
+def course_search(department, query):
+    conn = dbi.connect()
+    course_list = queries.search_course(conn, department, query)
+    if course_list == None:
+        flash("No matching courses found")
+        return redirect(url_for('home'))
+    return render_template('search.html', course_list=course_list)
+
 
 @app.route('/update_dropdown')
 def update_dropdown():
@@ -286,20 +301,19 @@ def course(department, course):
     rating = queries.find_course_avgrating(conn, course)
     #rating = 5
     return render_template('course.html', code=course_info['courseid'], course=course_info['title'], department=course_info['dept'], avg_rating=rating, posts=posts)
-'''
+
 @app.route('/course-section/<department>/<professor>/<course>')
 def course_section(department, professor, course):
-    #placeholder for now
     conn = dbi.connect()
-    course_info = queries.find_course_info(conn, department,professor,course)
-    if course_info==None:
-        flash('Department and course don\'t match, try again.')
+    course_info = queries.find_course_info(conn, department,course)
+    prof_info = queries.find_prof_name(conn, department,professor)
+    if course_info==None or prof_info==None:
+        flash('Department and course/professor don\'t match, try again.')
         return redirect(url_for('home'))
-    posts = queries.find_course_posts(conn, course)
-    rating = queries.find_course_avgrating(conn, course)
+    posts = queries.find_course_section_posts(conn, course, professor)
     #rating = 5
-    return redirect(url_for('home'))
-'''
+    return render_template('course-section.html', code=course_info['code'], course=course_info['title'], prof=prof_info['name'], department=course_info['dept'], posts=posts)
+
 @app.route('/change-username', methods=['POST'])
 def change_username():
     #get uid

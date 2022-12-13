@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<p>Result for search courses:</p>
+<article>
+    {% for course in course_list %}
+    <li><a href = "{{url_for('course', department=course.dept, course=course.courseid)}}">{{course.code}} {{course.title}}</a></li>
+    {% endfor %}
+</article>
+{% endblock %}

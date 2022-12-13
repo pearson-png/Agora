@@ -139,21 +139,26 @@ def find_prof_name(conn, department,pid):
     #returns one matching name
     return curs.fetchone()
 
+def search_course(conn, dept, query):
+    curs = dbi.dict_cursor(conn)
+    query_string = '%' + query.lower() + '%' # create string for use in wildcard
+    if dept =="0":
+        curs.execute("""select dept, courseid, title, code
+                        from courses 
+                        where lower(title) like %s""", [query_string]) 
+    else:
+        curs.execute("""select dept, courseid, title, code
+                        from courses 
+                        where lower(title) like %s and dept=%s""", [query_string, dept]) 
+    return curs.fetchall()
+
+
 def find_course_info(conn, department,courseid):
     '''Returns info of course with given department and course id'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''select * from courses 
                     where dept=%s and courseid=%s''', [department,courseid])
     return curs.fetchone()
-
-def find_course_sections(conn, department, courseid, pid):
-    '''Returns a list of dictionaries of courses in
-    a given department'''
-    curs = dbi.dict_cursor(conn)
-    curs.execute('''
-        select courseid, title, code from courses where
-        dept = %s and ''', [department])
-    return curs.fetchall()
 
 def find_prof_posts(conn, pid):
     '''Returns all posts about a given professor'''
@@ -166,6 +171,12 @@ def find_course_posts(conn, courseid):
     '''Returns all posts about a given course'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''select * from posts where course = %s''', [courseid])
+    return curs.fetchall()
+
+def find_course_section_posts(conn, courseid, pid):
+    '''Returns all posts about a given course'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''select * from posts where course = %s and prof = %s''', [courseid, pid])
     return curs.fetchall()
 
 def find_prof_avgrating(conn, pid):
