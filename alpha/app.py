@@ -41,7 +41,7 @@ app.config['CAS_AFTER_LOGOUT'] = 'logout'
 def home():
     # check if logged in
     if len(session.keys()) == 0:
-        return redirect('http://cs.wellesley.edu:1950/login/')
+        return redirect('http://cs.wellesley.edu:1944/login/')
 
     # uid = session.get('uid')
     conn = dbi.connect()
@@ -165,13 +165,13 @@ def after_login():
         return redirect(url_for('home'))
     else: 
         flash('You must be a Wellesley College student to use Agora.')
-        return redirect('http://cs.wellesley.edu:1950/login/')
+        return redirect('http://cs.wellesley.edu:1944/login/')
 
 @app.route('/logout/')
 def logout():
     flash('You have been logged out.')
     # return redirect(url_for('cas.login'))
-    return redirect('http://cs.wellesley.edu:1950/login/')
+    return redirect('http://cs.wellesley.edu:1944/login/')
 
 @app.route('/view/<postid>', methods=['GET','POST'])
 #view individual posts
@@ -430,19 +430,21 @@ def course_section(department, professor, course):
     #rating = 5
     return render_template('course-section.html', code=course_info['code'], course=course_info['title'], prof=prof_info['name'], department=course_info['dept'], posts=posts)
 
-@app.route('/change-username', methods=['POST'])
+@app.route('/change-username', methods=['GET','POST'])
 def change_username():
+    conn = dbi.connect()
     #get uid
     uid = session.get('uid')
     #get new name
     new_name = helper.random_username()
     #check if name exist
-    check = queries.check_username(new_name)
+    check = queries.check_username(conn, new_name)
     #if not none, the name exists, try again until you get a free name
     while check != None:
         new_name = helper.random_username()
-        check = queries.check_username(uid, new_name)
-    queries.update_username(new_name)
+        check = queries.check_username(conn, new_name)
+    queries.update_username(conn, uid, new_name)
+    flash('Your username has been changed.')
     return redirect(url_for('home'))
 
 @app.before_first_request
