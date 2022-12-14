@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<h1>Welcome!</h1>
+    {% for post in posts %}
+    <div class="card"> 
+        <h1> <a href="{{url_for('view_post', postid = post.postid)}}">View Post</a> </h1>
+        <h2>Professor: {{ post.prof }} | Rating: {{ post.prof_rating }} </h2>
+        <h2>Course: {{ post.course }} | Rating: {{ post.course_rating}} </h2>
+        <h5>Posted by: {{ post.user }} | At: {{ post.time }}</h5>
+        <p>Text: {{ post.text }}</p>
+        <h3>
+            <a href="{{url_for('post_upvote', postid=post.postid)}}">Upvote: </a> {{ post.upvotes }} | 
+            <a href="{{url_for('post_downvote', postid=post.postid)}}">Downvote: </a> {{ post.downvotes }} 
+        </h3>
+    </div>
+    {% endfor %}
+{% endblock %}

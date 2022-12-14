@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8'>
+    <!-- for mobile-friendly pages -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name=author content="">
+    <title>{{ page_title }}</title>
+    <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
+    {% block head_stuff %} {% endblock %}
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <!-- ajax -->
+    <script type="text/javascript">
+      $(document).ready(function() {
+        $('#department').change(function(){
+    
+          $.getJSON('/update_dropdown', {
+                department: $('#department').val()
+    
+              }).done(function(data) {
+                    $('#professor').html(data.html_string1);
+                    $('#course').html(data.html_string2);
+               })
+        });
+        $("#process_input").on("click", function (event) { 
+          $.ajax({
+              data : {
+                department : $('#department').val(),
+                professor : $('#professor').val(),
+                course : $('#course').val(),
+              },
+              type : 'POST',
+              url : '/'
+            })
+            .done(function(data){
+              $('#output').text(data.output).show();
+            });
+            event.preventDefault();
+          });
+        }); 
+    </script>
+</head>
+<body>
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<div id="messages">
+  {% for msg in messages %}
+  <p>{{msg}}</p>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+            
+{% block nav %}
+<nav>
+  <ul>
+    <li><a href="{{url_for('home')}}">Home</a></li>
+    <li><a href="{{url_for('upload')}}">Create a Post</a></li>
+    <li><a href="{{url_for('change_username')}}">Change Username</a></li>
+    <li><a href="{{url_for('login')}}">Logout</a></li>
+  </ul>
+</nav>
+{% endblock %}
+
+{% block form %}
+<div class="leftcolumn">
+  <section id="filter" class="col-xs-12 col-sm-3 col-md-3 col-lg-3 pull-left">
+    <form method="post" name="filters" action="{{url_for('home')}}">
+        <div id="filters">
+            <div class=filter_title>
+                Filters
+            </div>
+            <div></div>
+            <div class="row">
+              <div class="formsection">
+                <label><strong>Select Department</strong>
+                <p><select id="department" class="w-select filter_selecter" name="department">
+                    <option value="0"> All </option>
+                    {% for dept in departments %}
+                      <option value={{ dept.abbrv }}>{{ dept.name }}</option>
+                    {% endfor %}
+                  </select></p></label>
+                </div>
+            </div>
+            <div></div>
+            <div class="row">
+                <div class="formsection">
+                  <label><strong>Select Professor</strong>
+                  <p><select id="professor" class="w-select filter_selecter" name="professor">
+                    <option value="0"> All </option>
+                    {% for prof in professors %}
+                      <option value={{ prof }}>{{ prof }}</option>
+                    {% endfor %}
+                  </select></p></label> 
+                </div>
+            </div>
+            <div></div>
+            <div class="row">
+                <div class="formsection">
+                  <label><strong>Select Course</strong>
+                  <p><select id="course" class="w-select filter_selecter" name="course">
+                    <option value="0"> All </option>
+                    {% for course in courses %}
+                      <option value={{ course }}>{{ course }}:{{ course }}</option>
+                    {% endfor %}
+                  </select></p></label> 
+                </div>
+            </div>
+                <div></div>
+                <div class="row">
+                  <div class="formsection">
+                      <label><strong>Search</strong>
+                        <p><input type = "text" required name = "search" value= None></p>
+                      </label>
+                    </div>
+                  </div>
+                      <div></div>
+                    <div class="formsection">
+                      <input name="submit" data-wait="Please wait..." type="submit" value="Search" class="w-button submit_button"/>
+                      <!-- <button type="button" id="process_input">Search</button>-->
+                  </div>
+              </div>
+     </form> 
+  </section>
+</div>
+
+{% endblock %}
+
+{% block page_title %}
+<h1>{{page_title}}</h1>
+{% endblock %}
+
+{% block main_content %}
+<h1>Welcome!</h1>
+{% endblock %}
+  
+  </body>
+</html>
+
