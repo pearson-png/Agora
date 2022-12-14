@@ -75,7 +75,7 @@ def home():
             courses = {}
             posts = queries.recent_posts(conn)
             flash("Please choose a department or fill in the search box")
-            return render_template('home_page.html',page_title='Hello', 
+            return render_template('home_page.html',title='Hello', 
             departments = departments, courses = courses, 
             professors = professors, posts = posts)
         elif prof == "0" and course == "0":
@@ -162,7 +162,8 @@ def after_login():
         flash('Welcome back, you are logged in.')
         return redirect(url_for('home', title = 'Title'))
     # register if scott or a student
-    elif email == 'scott.anderson@wellesley.edu' or session['CAS_ATTRIBUTES']\
+    elif email == 'scott.anderson@wellesley.edu' or email == \
+        'sdanderson@wellesley.edu' or session['CAS_ATTRIBUTES']\
         ['cas:isStudent'] == 'Y':
         # print('registering user and redirecting to homepage')
         flash('You are now registered with Agora!')
