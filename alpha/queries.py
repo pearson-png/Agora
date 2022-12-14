@@ -145,7 +145,7 @@ def find_prof_name(conn, department,pid):
 def search_course(conn, dept, query):
     curs = dbi.dict_cursor(conn)
     query_string = '%' + query.lower() + '%' # create string for use in 
-    wildcard
+    #wildcard
     if dept =="0":
         curs.execute("""select dept, courseid, title, code
                         from courses 
