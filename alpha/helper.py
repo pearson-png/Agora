@@ -2,7 +2,7 @@ import random
 
 
 def random_username():
-    # returns the random username 
+    '''returns the random username '''
     adjective = get_random_word('static/common-adjectives.txt')
     animal = get_random_word('static/animals.txt')
     return adjective + animal
