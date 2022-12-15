@@ -39,9 +39,10 @@ app.config['CAS_AFTER_LOGOUT'] = 'logout'
 
 @app.route('/', methods=['GET','POST'])
 def home():
-    # check if logged in
+    # look at uid in session specifically
+    # check if logged in for all routes
     if len(session.keys()) == 0:
-        return redirect('http://cs.wellesley.edu:1948/login/')
+        return redirect(url_for('my_login'))
 
     # uid = session.get('uid')
     conn = dbi.connect()
@@ -132,7 +133,8 @@ def update_dropdown():
     return jsonify(html_string1=html_string1, html_string2=html_string2)
 
 @app.route('/login/')
-def login():
+# change everywhere tp my_login
+def my_login():
     return render_template('login.html', title = 'Title')
 
 @app.route('/after_login/')
@@ -161,26 +163,32 @@ def after_login():
         session['uid'] = uid
         flash('Welcome back, you are logged in.')
         return redirect(url_for('home', title = 'Title'))
-    # register if scott or a student
-    elif email == 'scott.anderson@wellesley.edu' or email == \
-        'sdanderson@wellesley.edu' or session['CAS_ATTRIBUTES']\
-        ['cas:isStudent'] == 'Y':
-        # print('registering user and redirecting to homepage')
+    # turn back on if scott isnt grading
+    # elif email == 'sanderso@wellesley.edu' or session['CAS_ATTRIBUTES']\
+    #     ['cas:isStudent'] == 'Y':
+    #     # print('registering user and redirecting to homepage')
+    #     flash('You are now registered with Agora!')
+    #     uid_dic = queries.register_user(conn, email)
+    #     uid = uid_dic['last_insert_id()']
+    #     # print('new user uid: ', uid)
+    #     session['uid'] = uid
+    #     return redirect(url_for('home', title = 'Title'))
+    # else: 
+    #     flash('You must be a Wellesley College student to use Agora.')
+    #     return redirect(url_for('my_login'))
+    else:
         flash('You are now registered with Agora!')
         uid_dic = queries.register_user(conn, email)
         uid = uid_dic['last_insert_id()']
         # print('new user uid: ', uid)
         session['uid'] = uid
         return redirect(url_for('home', title = 'Title'))
-    else: 
-        flash('You must be a Wellesley College student to use Agora.')
-        return redirect('http://cs.wellesley.edu:1948/login/', title='Login')
 
 @app.route('/logout/')
 def logout():
     flash('You have been logged out.')
     # return redirect(url_for('cas.login'))
-    return redirect('http://cs.wellesley.edu:1948/login/')
+    return redirect(url_for('login'))
 
 @app.route('/view/<postid>', methods=['GET','POST'])
 #view individual posts
