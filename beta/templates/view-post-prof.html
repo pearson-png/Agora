@@ -11,7 +11,7 @@
 <div class="card">
     <h2> Professor: {{ prof_name }} | Rating: {{ prof_rating }} </h2>
     <h5>Posted by: {{ user }} | At: {{ time }}</h5>
-    <p>Text: {{ text }}</p>
+    <p>{{ text }}</p>
     <!-- How to fill in the post id here? -->
     <a href="{{url_for('comment', postid=postid)}}">Leave a Comment</a> 
 </div>
@@ -19,7 +19,7 @@
 {% for comment in comments %}
 <div class="card">  
     <h3>Posted by: {{ comment.user }} | At: {{ comment.time }}</h3>
-    <p>Text: {{ comment.text }}</p>
+    <p>{{ comment.text }}</p>
     <h3><a href="{{url_for('comment_upvote', postid=postid, commentid=comment.commentid)}}">Upvote: </a> {{ comment.upvotes }} | 
       <a href="{{url_for('comment_downvote', postid=postid, commentid=comment.commentid)}}">Downvote: </a> {{ comment.downvotes }} </h3>
 </div>
