@@ -9,7 +9,7 @@ app = Flask(__name__)
 import cs304dbi as dbi
 # import cs304dbi_sqlite3 as dbi
 
-import random
+import random, os
 import queries
 from datetime import datetime
 import helper
@@ -34,6 +34,11 @@ app.config['CAS_LOGOUT_ROUTE'] = '/module.php/casserver/cas.php/logout'
 app.config['CAS_VALIDATE_ROUTE'] = '/module.php/casserver/serviceValidate.php'
 app.config['CAS_AFTER_LOGIN'] = 'after_login'
 app.config['CAS_AFTER_LOGOUT'] = 'logout'
+
+# upload files
+app.config['UPLOADS'] = 'uploads'
+app.config['MAX_CONTENT_LENGTH'] = 1*1024*1024 # 1 MB
+ALLOWED_EXTENSIONS = {'pdf'}
 
 # create dic for random usernames
 usernames_dict = {}
@@ -70,7 +75,7 @@ def home():
         ##options here
         if dept == "0":
             if search != 'None':
-                return redirect(url_for('course_search', department=dept, 
+                return redirect(url_for('search', department=dept, 
                 query=search))
             #if no dept chosen, and no search entered, reload the homepage no 
             # matter other fields
@@ -84,7 +89,7 @@ def home():
             professors = professors, posts = posts)
         elif prof == "0" and course == "0":
             if search != 'None':
-                return redirect(url_for('course_search', department=dept, 
+                return redirect(url_for('search', department=dept, 
                 query=search))
             #if only department chosen, direct to dept page
             return redirect(url_for('department', department=dept))
@@ -101,13 +106,15 @@ def home():
             professor=prof, course=course))
 
 @app.route('/search/<department>/<query>', methods=['GET'])
-def course_search(department, query):
+def search(department, query):
+    #search the course or professor with names that match the entered query
     conn = dbi.connect()
     course_list = queries.search_course(conn, department, query)
-    if course_list == None:
-        flash("No matching courses found")
+    professor_list = queries.search_prof(conn, department, query)
+    if len(course_list) == 0 and len(professor_list) == 0:
+        flash("No matching results found")
         return redirect(url_for('home'))
-    return render_template('search.html', course_list=course_list)
+    return render_template('search.html', course_list=course_list, professor_list=professor_list)
 
 
 @app.route('/update_dropdown')
@@ -191,7 +198,7 @@ def after_login():
 def logout():
     flash('You have been logged out.')
     # return redirect(url_for('cas.login'))
-    return redirect(url_for('login'))
+    return redirect(url_for('my_login'))
 
 @app.route('/view/<postid>', methods=['GET'])
 #view individual posts
@@ -344,10 +351,33 @@ def upload():
         course_rating = request.form['course-rating']
         review_text = request.form['review-text']
 
-        ### TO DO: add pdf table to database; get pdf from form and append to
-        #  database
-        pdf = request.files['pdf']
-        print(type(pdf))
+        # upload file
+        f = request.files['pdf']
+        # if a file was submitted and it is a PDF
+        if f and helper.allowed_file(f.filename, ALLOWED_EXTENSIONS):
+            try:
+                user_filename = f.filename
+                # make file name the uid plus the input file name
+                filename = secure_filename('{}_{}'.format(uid, user_filename))
+                pathname = os.path.join(app.config['UPLOADS'],filename)
+                f.save(pathname)
+                fileid = queries.add_file(conn, uid, filename)
+                fileid = fileid['last_insert_id()']
+            
+            except Exception as err:
+                flash('File upload failed {why}'.format(why=err))
+                return render_template('post-form.html', title='Create a Post',
+                                        professors = professors, 
+                                        courses = courses,
+                                        departments = departments)
+        # if a file was submitted and it is not a PDF
+        elif f and not helper.allowed_file(f.filename):
+            flash('File attachment must be a PDF')
+            return render_template('post-form.html', title='Create a Post',
+                                    professors = professors, courses = courses,
+                                    departments = departments)
+        else:
+            fileid = None
 
         # check if essential information is present
         if dept == "":
@@ -382,13 +412,14 @@ def upload():
         # upload post
         if profid == '':
             postid = queries.add_course_post(conn, time, uid, courseid, 
-            course_rating, review_text, pdf, username)
+            course_rating, review_text, fileid, username)['last_insert_id()']
         elif courseid == '':
             postid = queries.add_prof_post(conn, time, uid, profid, prof_rating
-            , review_text, pdf, username)
+            , review_text, fileid, username)['last_insert_id()']
         else:
             postid = queries.add_post(conn, time, uid, courseid, profid, 
-            prof_rating, course_rating, review_text, pdf, username)
+            prof_rating, course_rating, review_text, fileid, username)['last_insert_id()']
+
         flash('Upload successful')
         # go to post page
         return redirect(url_for('view_post', postid=postid))
@@ -423,7 +454,7 @@ def department(department):
     conn = dbi.connect()
     course_list = queries.find_dept_course(conn, department)
     dept_name = queries.find_dept_name(conn, department)
-    if course_list == None or dept_name ==None:
+    if len(course_list) == 0 or len(dept_name) ==0:
         flash("No matching courses found")
         return redirect(url_for('home'))
     return render_template('department.html', course_list=course_list, 
@@ -433,7 +464,7 @@ def department(department):
 def professor(department, professor):
     conn = dbi.connect()
     name = queries.find_prof_name(conn, department,professor)
-    if name==None:
+    if len(name)==0:
         flash('Department and professor don\'t match, try again.')
         return redirect(url_for('home'))
     posts = queries.find_prof_posts(conn, professor)
@@ -445,7 +476,7 @@ def professor(department, professor):
 def course(department, course):
     conn = dbi.connect()
     course_info = queries.find_course_info(conn, department,course)
-    if course_info==None:
+    if len(course_info)==0:
         flash('Department and course don\'t match, try again.')
         return redirect(url_for('home'))
     posts = queries.find_course_posts(conn, course)
@@ -460,7 +491,7 @@ def course_section(department, professor, course):
     conn = dbi.connect()
     course_info = queries.find_course_info(conn, department,course)
     prof_info = queries.find_prof_name(conn, department,professor)
-    if course_info==None or prof_info==None:
+    if len(course_info)==0 or len(prof_info)==0:
         flash('Department and course/professor don\'t match, try again.')
         return redirect(url_for('home'))
     posts = queries.find_course_section_posts(conn, course, professor)

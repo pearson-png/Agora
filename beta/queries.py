@@ -143,7 +143,7 @@ def find_prof_name(conn, department,pid):
     return curs.fetchone()
 
 def search_course(conn, dept, query):
-    '''find a course that is similar to the search query'''
+    '''find courses that is similar to the search query'''
     curs = dbi.dict_cursor(conn)
     query_string = '%' + query.lower() + '%' # create string for use in 
     #wildcard
@@ -155,6 +155,22 @@ def search_course(conn, dept, query):
         curs.execute("""select dept, courseid, title, code
                         from courses 
                         where lower(title) like %s and dept=%s""", 
+                        [query_string, dept]) 
+    return curs.fetchall()
+
+def search_prof(conn, dept, query):
+    '''find professors that is similar to the search query'''
+    curs = dbi.dict_cursor(conn)
+    query_string = '%' + query.lower() + '%' # create string for use in 
+    #wildcard
+    if dept =="0":
+        curs.execute("""select pid, dept, name
+                        from professors 
+                        where lower(name) like %s""", [query_string]) 
+    else:
+        curs.execute("""select pid, dept, name
+                        from professors 
+                        where lower(name) like %s and dept=%s""", 
                         [query_string, dept]) 
     return curs.fetchall()
 
@@ -207,7 +223,6 @@ def find_prof_avgrating(conn, pid):
     curs.execute('''select avg(rating) as avg from prof_ratings 
                     where pid = %s''', [pid])
     avg = (curs.fetchone())['avg']
-    flash(avg)
     return avg
 
 def find_course_avgrating(conn, courseid):
@@ -432,4 +447,15 @@ def register_user(conn, email):
     conn.commit()
     # get the uid
     curs.execute('''select last_insert_id() from posts''')
+    return curs.fetchone()
+
+def add_file(conn, uid, filename):
+    '''
+    Enters a user-uploaded file into the database.
+    '''
+    sql = '''insert into documents(filepath, uid) values (%s, %s)'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute(sql, [filename, uid])
+    conn.commit()
+    curs.execute('''select last_insert_id() from documents''')
     return curs.fetchone()
