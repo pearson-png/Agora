@@ -198,7 +198,7 @@ def after_login():
 def logout():
     flash('You have been logged out.')
     # return redirect(url_for('cas.login'))
-    return redirect(url_for('login'))
+    return redirect(url_for('my_login'))
 
 @app.route('/view/<postid>', methods=['GET'])
 #view individual posts

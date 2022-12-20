@@ -57,7 +57,8 @@ CREATE TABLE `posts` (
   `text` varchar(2500),
   `attachments` varchar(100),
   `upvotes` int,
-  `downvotes` int
+  `downvotes` int,
+  `username` varchar(30)
 );
 
 CREATE TABLE `comments` (
@@ -68,7 +69,8 @@ CREATE TABLE `comments` (
   `text` varchar(1000),
   `attachments` varchar(100),
   `upvotes` int,
-  `downvotes` int
+  `downvotes` int,
+  `username` varchar(30)
 );
 
 CREATE TABLE `post_votes` (
@@ -88,8 +90,7 @@ CREATE TABLE  `comment_votes` (
 CREATE TABLE `users` (
   `uid` int not null auto_increment PRIMARY KEY,
   `username` varchar(30),
-  `email` varchar(50),
-  `password` varchar(50)
+  `email` varchar(50)
 );
 
 CREATE TABLE `documents` (
