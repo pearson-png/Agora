@@ -35,13 +35,16 @@ app.config['CAS_VALIDATE_ROUTE'] = '/module.php/casserver/serviceValidate.php'
 app.config['CAS_AFTER_LOGIN'] = 'after_login'
 app.config['CAS_AFTER_LOGOUT'] = 'logout'
 
+# create dic for random usernames
+usernames_dict = {}
+
 # to do: relplace hardcoded port numbers w port variable
 
 @app.route('/', methods=['GET','POST'])
 def home():
     # look at uid in session specifically
     # check if logged in for all routes
-    if len(session.keys()) == 0:
+    if session.get('uid'):
         return redirect(url_for('my_login'))
 
     # uid = session.get('uid')
