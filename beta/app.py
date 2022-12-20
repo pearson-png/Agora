@@ -35,6 +35,11 @@ app.config['CAS_VALIDATE_ROUTE'] = '/module.php/casserver/serviceValidate.php'
 app.config['CAS_AFTER_LOGIN'] = 'after_login'
 app.config['CAS_AFTER_LOGOUT'] = 'logout'
 
+# upload files
+app.config['UPLOADS'] = 'uploads'
+app.config['MAX_CONTENT_LENGTH'] = 1*1024*1024 # 1 MB
+ALLOWED_EXTENSIONS = {'pdf'}
+
 # create dic for random usernames
 usernames_dict = {}
 
@@ -346,10 +351,33 @@ def upload():
         course_rating = request.form['course-rating']
         review_text = request.form['review-text']
 
-        ### TO DO: add pdf table to database; get pdf from form and append to
-        #  database
-        pdf = request.files['pdf']
-        print(type(pdf))
+        # upload file
+        f = request.files['pdf']
+        # if a file was submitted and it is a PDF
+        if f and helper.allowed_file(f.filename, ALLOWED_EXTENSIONS):
+            try:
+                user_filename = f.filename
+                # make file name the uid plus the input file name
+                filename = secure_filename('{}_{}'.format(uid, user_filename))
+                pathname = os.path.join(app.config['UPLOADS'],filename)
+                f.save(pathname)
+                fileid = queries.add_file(conn, uid, filename)
+                fileid = fileid['last_insert_id()']
+            
+            except Exception as err:
+                flash('File upload failed {why}'.format(why=err))
+                return render_template('post-form.html', title='Create a Post',
+                                        professors = professors, 
+                                        courses = courses,
+                                        departments = departments)
+        # if a file was submitted and it is not a PDF
+        elif f and not helper.allowed_file(f.filename):
+            flash('File attachment must be a PDF')
+            return render_template('post-form.html', title='Create a Post',
+                                    professors = professors, courses = courses,
+                                    departments = departments)
+        else:
+            fileid = None
 
         # check if essential information is present
         if dept == "":
@@ -384,13 +412,14 @@ def upload():
         # upload post
         if profid == '':
             postid = queries.add_course_post(conn, time, uid, courseid, 
-            course_rating, review_text, pdf, username)
+            course_rating, review_text, fileid, username)['last_insert_id()']
         elif courseid == '':
             postid = queries.add_prof_post(conn, time, uid, profid, prof_rating
-            , review_text, pdf, username)
+            , review_text, fileid, username)['last_insert_id()']
         else:
             postid = queries.add_post(conn, time, uid, courseid, profid, 
-            prof_rating, course_rating, review_text, pdf, username)
+            prof_rating, course_rating, review_text, fileid, username)['last_insert_id()']
+            
         flash('Upload successful')
         # go to post page
         return redirect(url_for('view_post', postid=postid))

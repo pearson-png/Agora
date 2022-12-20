@@ -23,3 +23,7 @@ def get_random_word(file_name):
     rand_index = random.randint(0, len(word_list) - 1) 
     word = word_list[rand_index].lower()
     return word.capitalize()
+
+def allowed_file(filename, extensions):
+    return '.' in filename and \
+        filename.rsplit('.', 1)[1].lower() in extensions

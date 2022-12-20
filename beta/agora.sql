@@ -2,6 +2,7 @@ use agora_db;
 
 drop table if exists `post_votes`;
 drop table if exists `comment_votes`;
+drop table if exists `documents`;
 drop table if exists `comments`;
 drop table if exists `posts`;
 drop table if exists `prof_ratings`;
@@ -91,6 +92,12 @@ CREATE TABLE `users` (
   `password` varchar(50)
 );
 
+CREATE TABLE `documents` (
+  `docid` int auto_increment PRIMARY KEY,
+  `filepath` varchar(100) not null,
+  `uid` int
+);
+
 ALTER TABLE `comments` ADD FOREIGN KEY (`user`) REFERENCES `users` (`uid`);
 
 ALTER TABLE `posts` ADD FOREIGN KEY (`user`) REFERENCES `users` (`uid`);
@@ -121,3 +128,4 @@ ALTER TABLE `posts` ADD FOREIGN KEY (`course`) REFERENCES `courses` (`courseid`)
 
 ALTER TABLE `courses` ADD FOREIGN KEY (`dept`) REFERENCES `departments` (`abbrv`);
 
+ALTER TABLE `documents` ADD FOREIGN KEY (`uid`) REFERENCES `users` (`uid`);
