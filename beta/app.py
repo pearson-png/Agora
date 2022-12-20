@@ -9,7 +9,7 @@ app = Flask(__name__)
 import cs304dbi as dbi
 # import cs304dbi_sqlite3 as dbi
 
-import random
+import random, os
 import queries
 from datetime import datetime
 import helper
@@ -419,7 +419,7 @@ def upload():
         else:
             postid = queries.add_post(conn, time, uid, courseid, profid, 
             prof_rating, course_rating, review_text, fileid, username)['last_insert_id()']
-            
+
         flash('Upload successful')
         # go to post page
         return redirect(url_for('view_post', postid=postid))
