@@ -44,7 +44,7 @@ usernames_dict = {}
 def home():
     # look at uid in session specifically
     # check if logged in for all routes
-    if session.get('uid'):
+    if  not session.get('uid'):
         return redirect(url_for('my_login'))
 
     # uid = session.get('uid')
