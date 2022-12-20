@@ -233,37 +233,37 @@ def username_from_uid(conn, uid):
     return curs.fetchone()
 
 def add_post(conn, time, user, course, prof, prof_rating, course_rating, text,
- attachments):
+ attachments, username):
     '''Add a new post about course and professor to the database and returns
     the postid'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''insert into posts(time, user, course, prof, prof_rating,
-    course_rating, text, attachments) 
-    values(%s,%s,%s,%s,%s,%s,%s,%s)''',
-    [time, user, course, prof, prof_rating, course_rating, text, attachments])
+    course_rating, text, attachments, username) 
+    values(%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
+    [time, user, course, prof, prof_rating, course_rating, text, attachments, username])
     conn.commit()
     curs.execute('''insert into prof_ratings(rating, user, pid)
                     values(%s, %s, %s)
                     on duplicate key update rating = %s''', 
                     [prof_rating, user, prof, prof_rating])
     conn.commit()
+    id = curs.execute('''select last_insert_id()''')
     curs.execute('''insert into course_ratings(rating, user, courseid)
                     values(%s, %s, %s)
                     on duplicate key update rating = %s''', 
                     [course_rating, user, course, course_rating])
     conn.commit()
-    curs.execute('''select last_insert_id() from posts''')
-    return curs.fetchone() 
+    return id 
 
-def add_course_post(conn, time, user, course, course_rating, text, attachments):
+def add_course_post(conn, time, user, course, course_rating, text, attachments, username):
     '''Add a new post about a course to the database and returns the postid'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''insert into posts(time, user, course, course_rating, text,
-    attachments) 
-    values(%s,%s,%s,%s,%s,%s)''',
-    [time, user, course, course_rating, text, attachments])
+    attachments, username) 
+    values(%s,%s,%s,%s,%s,%s,%s)''',
+    [time, user, course, course_rating, text, attachments, username])
     conn.commit()
-    id = curs.execute('''select last_insert_id() from posts''')
+    id = curs.execute('''select last_insert_id()''')
     curs.execute('''insert into course_ratings(rating, user, courseid)
                     values(%s, %s, %s)
                     on duplicate key update rating = %s''', 
@@ -271,36 +271,36 @@ def add_course_post(conn, time, user, course, course_rating, text, attachments):
     conn.commit()
     return id
 
-def add_prof_post(conn, time, user, prof, prof_rating, text, attachments):
+def add_prof_post(conn, time, user, prof, prof_rating, text, attachments, username):
     '''Add a new post about a professor to the database and returns the 
     postid'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''insert into posts(time, user, prof, prof_rating, text,
-    attachments) 
-    values(%s,%s,%s,%s,%s,%s)''',
-    [time, user, prof, prof_rating, text, attachments])
+    attachments, username) 
+    values(%s,%s,%s,%s,%s,%s,%s)''',
+    [time, user, prof, prof_rating, text, attachments, username])
     conn.commit()
+    id = curs.execute('''select last_insert_id()''')
     curs.execute('''insert into prof_ratings(rating, user, pid)
                     values(%s, %s, %s)
                     on duplicate key update rating = %s''', 
                     [prof_rating, user, prof, prof_rating])
     conn.commit()
-    curs.execute('''select last_insert_id() from posts''')
-    return curs.fetchone() 
+    return id
 
 
 def add_comment(conn, postid, time, user, text, attachments, upvotes, 
-downvotes):
+downvotes, username):
     '''Add a new comment associated with a post to the database and returns the
     commentid'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''insert into comments(postid, time, user, text, attachments,
-    upvotes, downvotes)
-                    values(%s,%s,%s,%s,%s,%s,%s)''', 
+    upvotes, downvotes, username)
+                    values(%s,%s,%s,%s,%s,%s,%s,%s)''', 
                     [postid, time, user, text, attachments, upvotes, 
-                    downvotes])
+                    downvotes, username])
     conn.commit()
-    curs.execute('''select last_insert_id() from comments''')
+    curs.execute('''select last_insert_id()''')
     return curs.fetchone()
 
 def get_comments(conn, postid):
