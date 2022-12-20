@@ -70,7 +70,7 @@ def home():
         ##options here
         if dept == "0":
             if search != 'None':
-                return redirect(url_for('course_search', department=dept, 
+                return redirect(url_for('search', department=dept, 
                 query=search))
             #if no dept chosen, and no search entered, reload the homepage no 
             # matter other fields
@@ -84,7 +84,7 @@ def home():
             professors = professors, posts = posts)
         elif prof == "0" and course == "0":
             if search != 'None':
-                return redirect(url_for('course_search', department=dept, 
+                return redirect(url_for('search', department=dept, 
                 query=search))
             #if only department chosen, direct to dept page
             return redirect(url_for('department', department=dept))
@@ -101,13 +101,15 @@ def home():
             professor=prof, course=course))
 
 @app.route('/search/<department>/<query>', methods=['GET'])
-def course_search(department, query):
+def search(department, query):
+    #search the course or professor with names that match the entered query
     conn = dbi.connect()
     course_list = queries.search_course(conn, department, query)
-    if course_list == None:
-        flash("No matching courses found")
+    professor_list = queries.search_prof(conn, department, query)
+    if len(course_list) == 0 and len(professor_list) == 0:
+        flash("No matching results found")
         return redirect(url_for('home'))
-    return render_template('search.html', course_list=course_list)
+    return render_template('search.html', course_list=course_list, professor_list=professor_list)
 
 
 @app.route('/update_dropdown')
@@ -427,7 +429,7 @@ def department(department):
     conn = dbi.connect()
     course_list = queries.find_dept_course(conn, department)
     dept_name = queries.find_dept_name(conn, department)
-    if course_list == None or dept_name ==None:
+    if len(course_list) == 0 or len(dept_name) ==0:
         flash("No matching courses found")
         return redirect(url_for('home'))
     return render_template('department.html', course_list=course_list, 
@@ -437,7 +439,7 @@ def department(department):
 def professor(department, professor):
     conn = dbi.connect()
     name = queries.find_prof_name(conn, department,professor)
-    if name==None:
+    if len(name)==0:
         flash('Department and professor don\'t match, try again.')
         return redirect(url_for('home'))
     posts = queries.find_prof_posts(conn, professor)
@@ -449,7 +451,7 @@ def professor(department, professor):
 def course(department, course):
     conn = dbi.connect()
     course_info = queries.find_course_info(conn, department,course)
-    if course_info==None:
+    if len(course_info)==0:
         flash('Department and course don\'t match, try again.')
         return redirect(url_for('home'))
     posts = queries.find_course_posts(conn, course)
@@ -464,7 +466,7 @@ def course_section(department, professor, course):
     conn = dbi.connect()
     course_info = queries.find_course_info(conn, department,course)
     prof_info = queries.find_prof_name(conn, department,professor)
-    if course_info==None or prof_info==None:
+    if len(course_info)==0 or len(prof_info)==0:
         flash('Department and course/professor don\'t match, try again.')
         return redirect(url_for('home'))
     posts = queries.find_course_section_posts(conn, course, professor)
