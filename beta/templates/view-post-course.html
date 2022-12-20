@@ -1,38 +1,9 @@
 <!--view-post-prof-course.html page to view individual posts with both course and prof ratings-->
 
-<!--Doesn't extend base.html so that we don't have the filters-->
-<!doctype html>
-<html lang='en'>
-<head>
-    <meta charset='utf-8'>
-    <!-- for mobile-friendly pages -->
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name=author content="">
-    <title>{{ page_title }}</title>
-    <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
-    {% block head_stuff %} {% endblock %}
-</head>
-<body>
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-<div id="messages">
-  {% for msg in messages %}
-  <p>{{msg}}</p>
-  {% endfor %}
-</div>
-{% endif %}
-{% endwith %}
-            
-{% block nav %}
-<nav>
-  <ul>
-    <li><a href="{{url_for('home')}}">Home</a></li>
-  </ul>
-</nav>
-{% endblock %}
+{% extends "base.html" %}
 
-{% block page_title %}
-<h1>{{title}}</h1>
+<!--doesn't need search filter-->
+{% block form %}
 {% endblock %}
 
 {% block main_content %}
@@ -57,8 +28,4 @@
 {% endblock %}
 
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-  {% block end_scripts %}
-  {% endblock %}
-  
-</body>
-</html>
+
