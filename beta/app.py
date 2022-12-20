@@ -59,9 +59,7 @@ def home():
         departments = queries.find_depts(conn)
         professors = {}
         courses = {}
-        # professors = queries.find_profs(conn)
-        # courses = queries.find_courses(conn)
-        posts = queries.recent_posts(conn)
+        posts = queries.get_recent_post_allinfo(conn)
         return render_template('home_page.html',page_title='Hello', 
         departments = departments, courses = courses, 
         professors = professors, posts = posts)
@@ -204,35 +202,36 @@ def logout():
 #view individual posts
 def view_post(postid):
     conn = dbi.connect()
-    # if user clicks on a post
-    #always include these in all posts
-    user = queries.post_user(conn, postid)['username']
-    text = queries.post_text(conn,postid)['text']
-    time = queries.post_time(conn,postid)['time']
+    #query 1 gets all post info, always include these in all posts
+    postInfo = queries.get_post_info(conn, postid)
+    
+    user = postInfo['username']
+    text = postInfo['text']
+    time = postInfo['time']
+
+    #query 2, loads all comments for given post
     comments = queries.get_comments(conn,postid)
 
-    #course variables
-    try:
-        course_code = queries.post_course_code(conn, postid)['code']
-    except TypeError:
+    #query 3, gets all course info
+    courseInfo = queries.get_course_info(conn,postid)
+
+    if courseInfo != None:
+        course_code = courseInfo['code']
+        course_name = courseInfo['title']
+        course_rating = courseInfo['course_rating']
+    else: 
         course_code = None
-    try:
-        course_name = queries.post_course_name(conn,postid)['title']
-    except TypeError:
         course_name = None
-    try:
-        course_rating = queries.post_course_rating(conn, postid)\
-            ['course_rating']
-    except TypeError:
         course_rating = None
-    #professor variables
-    try:
-        prof_name = queries.post_prof_name(conn, postid)['name']
-    except TypeError:
+    
+    #query 4 gets all of the prof info 
+    profInfo = queries.get_prof_info(conn,postid)
+    
+    if profInfo != None:
+        prof_name = profInfo['name']
+        prof_rating = profInfo['prof_rating']
+    else:
         prof_name = None
-    try:
-        prof_rating = queries.post_prof_rating(conn, postid)['prof_rating']
-    except TypeError:
         prof_rating = None
     
     #if there is no professor 

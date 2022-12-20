@@ -3,6 +3,20 @@ from flask import (Flask, render_template, make_response, url_for, request,
 import cs304dbi as dbi
 import helper
 
+def get_recent_post_allinfo(conn):
+    '''Returns postid, username, text, timestamp, 
+        course code, course title, course rating
+        prof name, prof rating, from recent posts'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+        select postid,username, text, time, code
+        title, course_rating, name, prof_rating, upvotes, downvotes
+        from posts 
+        inner join courses on posts.course=courses.courseid
+        inner join professors on posts.prof=professors.pid
+        order by time desc limit 50''')
+    return curs.fetchall()
+
 def find_depts(conn):
     '''Returns a list of dictionaries of all departments'''
     curs = dbi.dict_cursor(conn)
@@ -42,94 +56,33 @@ def find_courses(conn):
         select courseid, title, code from courses''')
     return curs.fetchall()
 
-def recent_posts(conn):
-    '''Returns a list of dictionaries of 50 most recent posts'''
-    '''IMPORTANT note: switch this to be with infinite scrolling later'''
+
+def get_post_info(conn,postid):
+    '''Returns username, text and timestamp from a specific post '''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
-        select * from posts
-        order by time desc
-        limit 50''')
-    return curs.fetchall()
-
-
-def post_user(conn, postid):
-    '''Returns username that wrote a specific post '''
-    curs = dbi.dict_cursor(conn)
-    curs.execute('''
-    select users.username
-    from posts inner join users 
-    on (posts.user = users.uid)
+    select username, text, time 
+    from posts 
     where postid = %s''', [postid])
     return curs.fetchone()
 
-def post_course_rating(conn, postid):
-    '''Returns single course rating from a specific post '''
+def get_course_info(conn, postid):
+    '''Returns course name, code and rating from a specific post '''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
-    select posts.course_rating
-    from posts inner join courses 
-    on (posts.course = courses.courseID)
-    where postid = %s''',[postid]) 
-    #returns course rating
-    return curs.fetchone()
-
-def post_course_code(conn, postid):
-    '''Returns single course code from a specific post '''
-    curs = dbi.dict_cursor(conn)
-    curs.execute('''
-    select courses.code
-    from posts inner join courses 
-    on (posts.course = courses.courseID)
-    where postid = %s''',[postid]) 
-    #returns course course code
-    return curs.fetchone()
-
-def post_course_name(conn, postid):
-    '''Returns single course name from a specific post '''
-    curs = dbi.dict_cursor(conn)
-    curs.execute('''
-    select courses.title
-    from posts inner join courses 
+    select courses.title, courses.code, posts.course_rating
+    from posts inner join courses
     on (posts.course = courses.courseID)
     where postid = %s''',[postid]) 
     return curs.fetchone()
 
-def post_prof_rating(conn, postid):
-    '''Returns single prof rating from a specific post '''
+def get_prof_info(conn,postid):
+    '''Returns prof name and rating a specific post '''
     curs = dbi.dict_cursor(conn)
-    curs.execute('''
-    select posts.prof_rating
-    from posts inner join professors 
+    curs.execute(''' 
+    select name, posts.prof_rating
+    from posts inner join professors
     on (posts.prof = professors.pid)
-    where postid = %s''', [postid]) 
-    return curs.fetchone()
-
-def post_prof_name(conn, postid):
-    '''Returns single prof name from a specific post '''
-    curs = dbi.dict_cursor(conn)
-    curs.execute('''
-    select professors.name
-    from posts inner join professors 
-    on (posts.prof = professors.pid)
-    where postid = %s''', [postid]) 
-    return curs.fetchone()
-
-def post_text(conn, postid):
-    '''Returns text from a specific post '''
-    curs = dbi.dict_cursor(conn)
-    curs.execute('''
-    select posts.text
-    from posts 
-    where postid = %s''', [postid]) 
-    return curs.fetchone()
-
-def post_time(conn, postid):
-    '''Returns timestamp from a specific post '''
-    curs = dbi.dict_cursor(conn)
-    curs.execute('''
-    select posts.time
-    from posts 
     where postid = %s''', [postid]) 
     return curs.fetchone()
 
@@ -256,19 +209,21 @@ def add_post(conn, time, user, course, prof, prof_rating, course_rating, text,
     course_rating, text, attachments, username) 
     values(%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
     [time, user, course, prof, prof_rating, course_rating, text, attachments, username])
+    curs.execute('''select last_insert_id()''')
+    id = curs.fetchone()
     conn.commit()
     curs.execute('''insert into prof_ratings(rating, user, pid)
                     values(%s, %s, %s)
                     on duplicate key update rating = %s''', 
                     [prof_rating, user, prof, prof_rating])
     conn.commit()
-    id = curs.execute('''select last_insert_id()''')
     curs.execute('''insert into course_ratings(rating, user, courseid)
                     values(%s, %s, %s)
                     on duplicate key update rating = %s''', 
                     [course_rating, user, course, course_rating])
     conn.commit()
-    return id 
+    return id
+
 
 def add_course_post(conn, time, user, course, course_rating, text, attachments, username):
     '''Add a new post about a course to the database and returns the postid'''
@@ -277,8 +232,9 @@ def add_course_post(conn, time, user, course, course_rating, text, attachments, 
     attachments, username) 
     values(%s,%s,%s,%s,%s,%s,%s)''',
     [time, user, course, course_rating, text, attachments, username])
+    curs.execute('''select last_insert_id()''')
+    id = curs.fetchone()
     conn.commit()
-    id = curs.execute('''select last_insert_id()''')
     curs.execute('''insert into course_ratings(rating, user, courseid)
                     values(%s, %s, %s)
                     on duplicate key update rating = %s''', 
@@ -294,8 +250,9 @@ def add_prof_post(conn, time, user, prof, prof_rating, text, attachments, userna
     attachments, username) 
     values(%s,%s,%s,%s,%s,%s,%s)''',
     [time, user, prof, prof_rating, text, attachments, username])
+    curs.execute('''select last_insert_id()''')
+    id = curs.fetchone()
     conn.commit()
-    id = curs.execute('''select last_insert_id()''')
     curs.execute('''insert into prof_ratings(rating, user, pid)
                     values(%s, %s, %s)
                     on duplicate key update rating = %s''', 
@@ -326,8 +283,7 @@ def get_comments(conn, postid):
     curs.execute('''
         select * from comments
         where postid = %s
-        order by time asc
-        limit 50''', [postid])
+        order by time asc''', [postid])
     return curs.fetchall()
 
 def get_post_upvotes(conn,postid):
