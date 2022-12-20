@@ -1,4 +1,7 @@
-{ % extends "base.html" % }
+{% extends "base.html" %}
+
+{% block nav %}
+{% endblock %}
 
 {% block form %}
 {% endblock %}
@@ -7,6 +10,6 @@
 <h1>If you are a Wellesley College Student (or Scott), click below to login.</h1>
 <h3>If you're not a Wellesley Student (or Scott), sorry ¯\_(ツ)_/¯</h3>
 <form method="GET" action="{{url_for('cas.login')}}">
-    <button>login</button>
+  <p><input type="submit" value="Login">
   </form>
 {% endblock %}
