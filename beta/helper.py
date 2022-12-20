@@ -1,13 +1,12 @@
 import random 
 
 
-def random_username(dic):
+def random_username():
     '''returns the random username '''
-    if len(dic) == 0:
-        pass
     adjective = get_random_word('static/common-adjectives.txt')
     animal = get_random_word('static/animals.txt')
     return adjective + animal
+
 
 def get_random_word(file_name): 
     '''Returns a random word chosen from the file,

@@ -263,13 +263,13 @@ def add_course_post(conn, time, user, course, course_rating, text, attachments):
     values(%s,%s,%s,%s,%s,%s)''',
     [time, user, course, course_rating, text, attachments])
     conn.commit()
-    id = curs.execute('''select last_insert_id() from posts''')
     curs.execute('''insert into course_ratings(rating, user, courseid)
                     values(%s, %s, %s)
                     on duplicate key update rating = %s''', 
                     [course_rating, user, course, course_rating])
     conn.commit()
-    return id
+    curs.execute('''select last_insert_id() from posts''')
+    return curs.fetchone()
 
 def add_prof_post(conn, time, user, prof, prof_rating, text, attachments):
     '''Add a new post about a professor to the database and returns the 
