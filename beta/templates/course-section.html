@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 
 {% block main_content %}
-<p>{{code}} {{course}} taught by Professor {{prof}} from {{department}} department</p>
+<h1>{{code}} {{course}}</h1>
+<h1>Professor {{prof}}</h1>
+<p> From {{department}} department</p>
 <article>
     {% for post in posts %}
     <div class="card"> 
