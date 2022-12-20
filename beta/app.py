@@ -427,7 +427,7 @@ def department(department):
     if course_list == None or dept_name ==None:
         flash("No matching courses found")
         return redirect(url_for('home'))
-    return render_template('department.html', course_list=course_list, 
+    return render_template('department.html', page_title = "Department Page", course_list=course_list, 
     abbrv=department, name=dept_name['name'])
 
 @app.route('/professor/<department>/<professor>')
@@ -439,7 +439,7 @@ def professor(department, professor):
         return redirect(url_for('home'))
     posts = queries.find_prof_posts(conn, professor)
     rating = queries.find_prof_avgrating(conn, professor)
-    return render_template('professor.html', prof_name=name['name'], 
+    return render_template('professor.html', page_title = "Professor Page",prof_name=name['name'], 
     department=department, avg_rating=rating, posts=posts)
 
 @app.route('/course/<department>/<course>')
@@ -452,7 +452,7 @@ def course(department, course):
     posts = queries.find_course_posts(conn, course)
     rating = queries.find_course_avgrating(conn, course)
     #rating = 5
-    return render_template('course.html', code=course_info['courseid'], course=
+    return render_template('course.html', page_title = "Course Page",code=course_info['courseid'], course=
     course_info['title'], department=course_info['dept'], avg_rating=rating,
     posts=posts)
 
@@ -466,7 +466,7 @@ def course_section(department, professor, course):
         return redirect(url_for('home'))
     posts = queries.find_course_section_posts(conn, course, professor)
     #rating = 5
-    return render_template('course-section.html', code=course_info['code'],
+    return render_template('course-section.html', page_title = "Course Section Page",code=course_info['code'],
     course=course_info['title'], prof=prof_info['name'], 
     department=course_info['dept'], posts=posts)
 
