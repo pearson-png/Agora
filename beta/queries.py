@@ -448,3 +448,14 @@ def register_user(conn, email):
     # get the uid
     curs.execute('''select last_insert_id() from posts''')
     return curs.fetchone()
+
+def add_file(conn, uid, filename):
+    '''
+    Enters a user-uploaded file into the database.
+    '''
+    sql = '''insert into documents(filepath, uid) values (%s, %s)'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute(sql, [filename, uid])
+    conn.commit()
+    curs.execute('''select last_insert_id() from documents''')
+    return curs.fetchone()
