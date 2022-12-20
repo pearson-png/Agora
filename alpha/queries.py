@@ -143,10 +143,8 @@ def find_prof_name(conn, department,pid):
     return curs.fetchone()
 
 def search_course(conn, dept, query):
-    '''find a course that is similar to the search query'''
     curs = dbi.dict_cursor(conn)
-    query_string = '%' + query.lower() + '%' # create string for use in 
-    #wildcard
+    query_string = '%' + query.lower() + '%' # create string for use in  wildcard
     if dept =="0":
         curs.execute("""select dept, courseid, title, code
                         from courses 
@@ -159,7 +157,6 @@ def search_course(conn, dept, query):
     return curs.fetchall()
 
 def find_dept_course(conn, dept):
-    '''get all courses in a department'''
     curs = dbi.dict_cursor(conn)
     curs.execute("""select dept, courseid, title, code
                     from courses 
@@ -167,7 +164,6 @@ def find_dept_course(conn, dept):
     return curs.fetchall()
 
 def find_dept_name(conn, dept):
-    '''get the name of a department given the abbreviation'''
     curs = dbi.dict_cursor(conn)
     curs.execute("""select name
                     from departments

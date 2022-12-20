@@ -39,10 +39,9 @@ app.config['CAS_AFTER_LOGOUT'] = 'logout'
 
 @app.route('/', methods=['GET','POST'])
 def home():
-    # look at uid in session specifically
-    # check if logged in for all routes
+    # check if logged in
     if len(session.keys()) == 0:
-        return redirect(url_for('my_login'))
+        return redirect('http://cs.wellesley.edu:1947/login/')
 
     # uid = session.get('uid')
     conn = dbi.connect()
@@ -54,7 +53,7 @@ def home():
         # professors = queries.find_profs(conn)
         # courses = queries.find_courses(conn)
         posts = queries.recent_posts(conn)
-        return render_template('home_page.html',page_title='Hello', 
+        return render_template('home_page.html',title='Hello', 
         departments = departments, courses = courses, 
         professors = professors, posts = posts)
     if request.method == 'POST':
@@ -133,8 +132,7 @@ def update_dropdown():
     return jsonify(html_string1=html_string1, html_string2=html_string2)
 
 @app.route('/login/')
-# change everywhere tp my_login
-def my_login():
+def login():
     return render_template('login.html', title = 'Title')
 
 @app.route('/after_login/')
@@ -142,7 +140,7 @@ def after_login():
     # if uid already in session, can delete later but shows functionality
     if session.get('uid'): 
         flash('redirecting from login, uid already in session')
-        return redirect(url_for('home', title = 'Title'))
+        return redirect(url_for('home'))
 
     conn = dbi.connect()
     email = session['CAS_ATTRIBUTES']['cas:mail']
@@ -162,33 +160,26 @@ def after_login():
         # print('redirecting from after_login, user already registered')
         session['uid'] = uid
         flash('Welcome back, you are logged in.')
-        return redirect(url_for('home', title = 'Title'))
-    # turn back on if scott isnt grading
-    # elif email == 'sanderso@wellesley.edu' or session['CAS_ATTRIBUTES']\
-    #     ['cas:isStudent'] == 'Y':
-    #     # print('registering user and redirecting to homepage')
-    #     flash('You are now registered with Agora!')
-    #     uid_dic = queries.register_user(conn, email)
-    #     uid = uid_dic['last_insert_id()']
-    #     # print('new user uid: ', uid)
-    #     session['uid'] = uid
-    #     return redirect(url_for('home', title = 'Title'))
-    # else: 
-    #     flash('You must be a Wellesley College student to use Agora.')
-    #     return redirect(url_for('my_login'))
-    else:
+        return redirect(url_for('home'))
+    # register if scott or a student
+    elif email == 'scott.anderson@wellesley.edu' or session['CAS_ATTRIBUTES']\
+        ['cas:isStudent'] == 'Y':
+        # print('registering user and redirecting to homepage')
         flash('You are now registered with Agora!')
         uid_dic = queries.register_user(conn, email)
         uid = uid_dic['last_insert_id()']
         # print('new user uid: ', uid)
         session['uid'] = uid
-        return redirect(url_for('home', title = 'Title'))
+        return redirect(url_for('home'))
+    else: 
+        flash('You must be a Wellesley College student to use Agora.')
+        return redirect('http://cs.wellesley.edu:1947/login/')
 
 @app.route('/logout/')
 def logout():
     flash('You have been logged out.')
     # return redirect(url_for('cas.login'))
-    return redirect(url_for('login'))
+    return redirect('http://cs.wellesley.edu:1947/login/')
 
 @app.route('/view/<postid>', methods=['GET','POST'])
 #view individual posts

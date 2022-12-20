@@ -8,37 +8,6 @@
     <title>{{ page_title }}</title>
     <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
     {% block head_stuff %} {% endblock %}
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <!-- ajax -->
-    <script type="text/javascript">
-      $(document).ready(function() {
-        $('#department').change(function(){
-    
-          $.getJSON('/update_dropdown', {
-                department: $('#department').val()
-    
-              }).done(function(data) {
-                    $('#professor').html(data.html_string1);
-                    $('#course').html(data.html_string2);
-               })
-        });
-        $("#process_input").on("click", function (event) { 
-          $.ajax({
-              data : {
-                department : $('#department').val(),
-                professor : $('#professor').val(),
-                course : $('#course').val(),
-              },
-              type : 'POST',
-              url : '/'
-            })
-            .done(function(data){
-              $('#output').text(data.output).show();
-            });
-            event.preventDefault();
-          });
-        }); 
-    </script>
 </head>
 <body>
 
@@ -58,7 +27,7 @@
     <li><a href="{{url_for('home')}}">Home</a></li>
     <li><a href="{{url_for('upload')}}">Create a Post</a></li>
     <li><a href="{{url_for('change_username')}}">Change Username</a></li>
-    <li><a href="{{url_for('my_login')}}">Logout</a></li>
+    <li><a href="{{url_for('login')}}">Logout</a></li>
   </ul>
 </nav>
 {% endblock %}
@@ -73,46 +42,45 @@
             </div>
             <div></div>
             <div class="row">
+              <div class="formlabel" style="font-weight:bold;">Department</div>
               <div class="formsection">
-                <label><strong>Select Department</strong>
-                <p><select id="department" class="w-select filter_selecter" name="department">
+                  <select id="department" class="w-select filter_selecter" name="department" ">
                     <option value="0"> All </option>
                     {% for dept in departments %}
                       <option value={{ dept.abbrv }}>{{ dept.name }}</option>
                     {% endfor %}
-                  </select></p></label>
+                  </select>
                 </div>
             </div>
             <div></div>
             <div class="row">
+                <div class="formlabel" style="font-weight:bold;">Professor</div>
                 <div class="formsection">
-                  <label><strong>Select Professor</strong>
-                  <p><select id="professor" class="w-select filter_selecter" name="professor">
+                    <select id="professor" class="w-select filter_selecter" name="professor">
                     <option value="0"> All </option>
                     {% for prof in professors %}
                       <option value={{ prof }}>{{ prof }}</option>
                     {% endfor %}
-                  </select></p></label> 
+                  </select>
                 </div>
             </div>
             <div></div>
             <div class="row">
+                <div class="formlabel" style="font-weight:bold;">Course</div>
                 <div class="formsection">
-                  <label><strong>Select Course</strong>
-                  <p><select id="course" class="w-select filter_selecter" name="course">
+                    <select id="course" class="w-select filter_selecter" name="course">
                     <option value="0"> All </option>
                     {% for course in courses %}
                       <option value={{ course }}>{{ course }}:{{ course }}</option>
                     {% endfor %}
-                  </select></p></label> 
+                  </select>
                 </div>
             </div>
                 <div></div>
                 <div class="row">
+                  <div class="formlabel" style="font-weight:bold;">Search</div>
                   <div class="formsection">
-                      <label><strong>Search</strong>
-                        <p><input type = "text" required name = "search" value= None></p>
-                      </label>
+                      <input type = "text" required name = "search" value= None>
                     </div>
                   </div>
                       <div></div>
@@ -121,20 +89,49 @@
                       <!-- <button type="button" id="process_input">Search</button>-->
                   </div>
               </div>
-     </form> 
-  </section>
-</div>
+     </form>
+   </div>
+</section>
 
 {% endblock %}
 
 {% block page_title %}
-<h1>{{page_title}}</h1>
+<h1>{{title}}</h1>
 {% endblock %}
 
 {% block main_content %}
 <h1>Welcome!</h1>
 {% endblock %}
   
-  </body>
-</html>
+</body>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function() {
+    $('#department').change(function(){
 
+      $.getJSON('/update_dropdown', {
+            department: $('#department').val()
+
+          }).done(function(data) {
+                $('#professor').html(data.html_string1);
+                $('#course').html(data.html_string2);
+           })
+    });
+    $("#process_input").on("click", function (event) { 
+      $.ajax({
+          data : {
+            department : $('#department').val(),
+            professor : $('#professor').val(),
+            course : $('#course').val(),
+          },
+          type : 'POST',
+          url : '/'
+        })
+        .done(function(data){
+          $('#output').text(data.output).show();
+        });
+        event.preventDefault();
+      });
+    }); 
+</script>
+</html>
