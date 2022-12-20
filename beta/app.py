@@ -195,59 +195,58 @@ def logout():
     # return redirect(url_for('cas.login'))
     return redirect(url_for('login'))
 
-@app.route('/view/<postid>', methods=['GET','POST'])
+@app.route('/view/<postid>', methods=['GET'])
 #view individual posts
 def view_post(postid):
     conn = dbi.connect()
     # if user clicks on a post
-    if request.method == 'GET':
-        #always include these in all posts
-        user = queries.post_user(conn, postid)['username']
-        text = queries.post_text(conn,postid)['text']
-        time = queries.post_time(conn,postid)['time']
-        comments = queries.get_comments(conn,postid)
+    #always include these in all posts
+    user = queries.post_user(conn, postid)['username']
+    text = queries.post_text(conn,postid)['text']
+    time = queries.post_time(conn,postid)['time']
+    comments = queries.get_comments(conn,postid)
 
-        #course variables
-        try:
-            course_code = queries.post_course_code(conn, postid)['code']
-        except TypeError:
-            course_code = None
-        try:
-            course_name = queries.post_course_name(conn,postid)['title']
-        except TypeError:
-            course_name = None
-        try:
-            course_rating = queries.post_course_rating(conn, postid)\
-                ['course_rating']
-        except TypeError:
-            course_rating = None
-        #professor variables
-        try:
-            prof_name = queries.post_prof_name(conn, postid)['name']
-        except TypeError:
-            prof_name = None
-        try:
-            prof_rating = queries.post_prof_rating(conn, postid)['prof_rating']
-        except TypeError:
-            prof_rating = None
-        
-        #if there is no professor 
-        if prof_name == None:
-            return render_template('view-post-course.html', postid=postid, 
-            user=user, course_name=course_name, 
-            course_code=course_code, course_rating=course_rating, text=text,
-            time=time, comments=comments)
-        #if there is no course
-        elif course_code == None:
-            return render_template('view-post-prof.html', postid=postid, 
-            user=user, prof_name=prof_name, prof_rating=prof_rating, text=text,
-            time=time, comments=comments)
-        #if there is a prof and a course
-        else:
-            return render_template('view-post-prof-course.html', postid=postid,
-            user=user, course_name=course_name, course_code=course_code,
-            course_rating=course_rating, prof_name=prof_name, 
-            prof_rating=prof_rating, text=text, time=time, comments=comments) 
+    #course variables
+    try:
+        course_code = queries.post_course_code(conn, postid)['code']
+    except TypeError:
+        course_code = None
+    try:
+        course_name = queries.post_course_name(conn,postid)['title']
+    except TypeError:
+        course_name = None
+    try:
+        course_rating = queries.post_course_rating(conn, postid)\
+            ['course_rating']
+    except TypeError:
+        course_rating = None
+    #professor variables
+    try:
+        prof_name = queries.post_prof_name(conn, postid)['name']
+    except TypeError:
+        prof_name = None
+    try:
+        prof_rating = queries.post_prof_rating(conn, postid)['prof_rating']
+    except TypeError:
+        prof_rating = None
+    
+    #if there is no professor 
+    if prof_name == None:
+        return render_template('view-post-course.html', postid=postid, 
+        user=user, course_name=course_name, 
+        course_code=course_code, course_rating=course_rating, text=text,
+        time=time, comments=comments)
+    #if there is no course
+    elif course_code == None:
+        return render_template('view-post-prof.html', postid=postid, 
+        user=user, prof_name=prof_name, prof_rating=prof_rating, text=text,
+        time=time, comments=comments)
+    #if there is a prof and a course
+    else:
+        return render_template('view-post-prof-course.html', postid=postid,
+        user=user, course_name=course_name, course_code=course_code,
+        course_rating=course_rating, prof_name=prof_name, 
+        prof_rating=prof_rating, text=text, time=time, comments=comments) 
 
 @app.route('/upvote-post/<postid>', methods=['GET', 'POST'])
 def post_upvote(postid):
@@ -291,9 +290,7 @@ def comment(postid):
         attachments = None 
         upvotes = 0
         downvotes = 0
-        user = queries.username_from_uid(conn, uid)
-        print('user var: ',user)
-        # user = user['username']
+        username = queries.username_from_uid(conn, uid)['username']
         time = datetime.now()
         text = request.form['comment-text']
 
@@ -304,7 +301,7 @@ def comment(postid):
         # upload comment
         else:
             commentid = queries.add_comment(conn, postid, time, uid, text, 
-            attachments, upvotes, downvotes)
+            attachments, upvotes, downvotes, username)
             flash('Comment upload successful')
             # go to post page
             return redirect(url_for('view_post', postid=postid))
@@ -340,7 +337,7 @@ def upload():
         professors = professors, courses = courses, departments = departments)
     else: # method == POST
         # retrieve information
-        username = queries.username_from_uid(conn, uid)
+        username = queries.username_from_uid(conn, uid)['username']
         time = datetime.now()
         dept = request.form['dept']
         profid = request.form['pid']
@@ -387,17 +384,16 @@ def upload():
         # upload post
         if profid == '':
             postid = queries.add_course_post(conn, time, uid, courseid, 
-            course_rating, review_text, pdf)
+            course_rating, review_text, pdf, username)
         elif courseid == '':
             postid = queries.add_prof_post(conn, time, uid, profid, prof_rating
-            , review_text, pdf)
+            , review_text, pdf, username)
         else:
             postid = queries.add_post(conn, time, uid, courseid, profid, 
-            prof_rating, course_rating, review_text, pdf)
+            prof_rating, course_rating, review_text, pdf, username)
         flash('Upload successful')
         # go to post page
-        return redirect(url_for('view_post', 
-        postid=postid['last_insert_id()']))
+        return redirect(url_for('view_post', postid=postid))
 
 @app.route('/update_upload_form')
 def update_upload_form():
