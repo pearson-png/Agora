@@ -50,6 +50,7 @@ def home():
     # look at uid in session specifically
     # check if logged in for all routes
     if not session.get('uid'):
+        print(session.get('uid'))
         return redirect(url_for('my_login'))
 
     # uid = session.get('uid')
@@ -464,15 +465,16 @@ def change_username():
     #get uid
     uid = session.get('uid')
     #get new name
-    new_name = helper.random_username()
+    new_name = helper.random_username(usernames_dict)
     #check if name exist
     check = queries.check_username(conn, new_name)
     #if not none, the name exists, try again until you get a free name
     while check != None:
-        new_name = helper.random_username()
+        new_name = helper.random_username(usernames_dict)
         check = queries.check_username(conn, new_name)
     queries.update_username(conn, uid, new_name)
-    flash('Your username has been changed.')
+
+    flash('Your new username is {}.'.format(new_name))
     return redirect(url_for('home'))
 
 @app.before_first_request

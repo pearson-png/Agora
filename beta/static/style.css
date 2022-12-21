@@ -26,13 +26,18 @@ HTML {
   /* Left column */
   .leftcolumn { 
     float: left;
-    width: 30%;
+    width: 25%;
     background-color: #92c9f6;
+    padding: 5%;
+    margin: 1%;
+    border-radius: 15px;
   }
 
   .rightcolumn{
     float: right;
     width: 70%;
+    margin: 1%;
+    border-radius: 15px;
   }
   
   /* for posts */
@@ -40,6 +45,7 @@ HTML {
     background-color: white;
     padding: 20px;
     margin-top: 20px;
+    border-radius: 15px;
   }
 /* for a simple navbar.*/
 nav > ul {
