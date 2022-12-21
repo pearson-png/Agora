@@ -1,4 +1,5 @@
 import random 
+import queries
 from flask import (Flask, render_template, make_response, url_for, request,
                    redirect, flash, session, send_from_directory, jsonify)
 
@@ -50,7 +51,7 @@ def postFilterForm(conn, requests):
         departments = queries.find_depts(conn)
         professors = {}
         courses = {}
-        posts = queries.recent_posts(conn)
+        posts = queries.get_recent_post_allinfo(conn)
         flash("Please choose a department or fill in the search box")
         return render_template('home_page.html',title='Hello', 
         departments = departments, courses = courses, 
