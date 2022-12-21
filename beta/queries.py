@@ -122,10 +122,10 @@ def find_courses(conn):
 
 
 def get_post_info(conn,postid):
-    '''Returns username, text and timestamp from a specific post '''
+    '''Returns username, text and timestamp, upvotes, downvotes from a specific post '''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
-    select username, text, time 
+    select username, text, time, upvotes, downvotes
     from posts 
     where postid = %s''', [postid])
     return curs.fetchone()
@@ -265,14 +265,14 @@ def username_from_uid(conn, uid):
     return curs.fetchone()
 
 def add_post(conn, time, user, course, prof, prof_rating, course_rating, text,
- attachments, username):
+ attachments, username, upvotes, downvotes):
     '''Add a new post about course and professor to the database and returns
     the postid'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''insert into posts(time, user, course, prof, prof_rating,
-    course_rating, text, attachments, username) 
-    values(%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
-    [time, user, course, prof, prof_rating, course_rating, text, attachments, username])
+    course_rating, text, attachments, username, upvotes, downvotes) 
+    values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
+    [time, user, course, prof, prof_rating, course_rating, text, attachments, username, upvotes,downvotes])
     curs.execute('''select last_insert_id()''')
     id = curs.fetchone()
     conn.commit()
@@ -289,13 +289,13 @@ def add_post(conn, time, user, course, prof, prof_rating, course_rating, text,
     return id
 
 
-def add_course_post(conn, time, user, course, course_rating, text, attachments, username):
+def add_course_post(conn, time, user, course, course_rating, text, attachments, username, upvotes, downvotes):
     '''Add a new post about a course to the database and returns the postid'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''insert into posts(time, user, course, course_rating, text,
-    attachments, username) 
-    values(%s,%s,%s,%s,%s,%s,%s)''',
-    [time, user, course, course_rating, text, attachments, username])
+    attachments, username, upvotes, downvotes) 
+    values(%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
+    [time, user, course, course_rating, text, attachments, username, upvotes, downvotes])
     curs.execute('''select last_insert_id()''')
     id = curs.fetchone()
     conn.commit()
@@ -306,14 +306,14 @@ def add_course_post(conn, time, user, course, course_rating, text, attachments, 
     conn.commit()
     return id
 
-def add_prof_post(conn, time, user, prof, prof_rating, text, attachments, username):
+def add_prof_post(conn, time, user, prof, prof_rating, text, attachments, username, upvotes, downvotes):
     '''Add a new post about a professor to the database and returns the 
     postid'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''insert into posts(time, user, prof, prof_rating, text,
-    attachments, username) 
-    values(%s,%s,%s,%s,%s,%s,%s)''',
-    [time, user, prof, prof_rating, text, attachments, username])
+    attachments, username, upvotes, downvotes) 
+    values(%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
+    [time, user, prof, prof_rating, text, attachments, username, upvotes, downvotes])
     curs.execute('''select last_insert_id()''')
     id = curs.fetchone()
     conn.commit()
@@ -350,78 +350,36 @@ def get_comments(conn, postid):
         order by time asc''', [postid])
     return curs.fetchall()
 
-def get_post_upvotes(conn,postid):
-    '''Gets upvotes for post with postid '''
+def update_post_votes(conn,postid,votes):
+    '''Updates posts table to modify votes for post with postid'''
     curs = dbi.dict_cursor(conn)
-    curs.execute('''
-        select upvotes 
-        from posts
-        where postid = %s''', [postid])
-    return curs.fetchone()
-
-def update_post_upvotes(conn,postid,upvotes):
-    '''Updates posts table to increase upvote for post with postid'''
-    curs = dbi.dict_cursor(conn)
-    curs.execute(''' 
-        UPDATE posts 
-        SET upvotes = %s 
-        WHERE postid = %s''', [upvotes, postid])
-    conn.commit()
-    
-def get_post_downvotes(conn,postid):
-    '''Gets downvotes for post with postid '''
-    curs = dbi.dict_cursor(conn)
-    curs.execute('''
-        select downvotes 
-        from posts
-        WHERE postid = %s''', [postid])
-    return curs.fetchone()
-
-def update_post_downvotes(conn,postid,downvotes):
-    '''Updates posts table to increase downvotes for post with postid'''
-    curs = dbi.dict_cursor(conn)
-    curs.execute(''' 
-        UPDATE posts 
-        SET downvotes = %s 
-        WHERE postid = %s''', [downvotes, postid])
+    if votes == 'up':
+        curs.execute(''' 
+            UPDATE posts 
+            SET upvotes = upvotes + 1 
+            WHERE postid = %s''', [postid])
+    if votes == 'down':
+        curs.execute(''' 
+            UPDATE posts 
+            SET downvotes = downvotes + 1 
+            WHERE postid = %s''', [postid])
     conn.commit()
 
-def get_comment_upvotes(conn,commentid):
-    '''Gets upvotes for comment with commentid '''
+def update_comment_votes(conn,commentid,votes):
+    '''Updates comment table to modify votes for comment with commentid'''
     curs = dbi.dict_cursor(conn)
-    curs.execute('''
-        select upvotes 
-        from comments
-        where commentid = %s''', [commentid])
-    return curs.fetchone()
-
-def update_comment_upvotes(conn,commentid,upvotes):
-    '''Updates comment table to increase upvote for comment with commentid'''
-    curs = dbi.dict_cursor(conn)
-    curs.execute(''' 
-        UPDATE comments 
-        SET upvotes = %s 
-        WHERE commentid = %s''', [upvotes, commentid])
+    if votes == 'up':
+        curs.execute(''' 
+            UPDATE comments 
+            SET upvotes = upvotes + 1 
+            WHERE commentid = %s''', [commentid])
+    if votes == 'down':
+        curs.execute(''' 
+            UPDATE comments 
+            SET downvotes = downvotes + 1 
+            WHERE commentid = %s''', [commentid])
     conn.commit()
-    
-def get_comment_downvotes(conn,commentid):
-    '''Gets downvotes for comment with commentid '''
-    curs = dbi.dict_cursor(conn)
-    curs.execute('''
-        select downvotes 
-        from comments
-        where commentid = %s''', [commentid])
-    return curs.fetchone()
 
-def update_comment_downvotes(conn,commentid,downvotes):
-    '''Updates comment table to increase downvotes for comment with
-    commentid'''
-    curs = dbi.dict_cursor(conn)
-    curs.execute(''' 
-        UPDATE comments 
-        SET downvotes = %s 
-        WHERE commentid = %s''', [downvotes, commentid])
-    conn.commit()
 
 def check_username(conn, name):
     '''Returns a dictionary of user info with the given username'''
