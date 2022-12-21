@@ -4,14 +4,20 @@
 <p>Matching courses:</p>
 <article>
     {% for course in course_list %}
-    <li><a href = "{{url_for('course', department=course.dept, course=course.courseid)}}">{{course.code}} {{course.title}}</a></li>
+    <ul>
+    <li class="list"><a href = "{{url_for('course', department=course.dept, course=course.courseid)}}">{{course.code}} {{course.title}}</a></li>
+    </ul>
     {% endfor %}
 </article>
 
+<div class="rightcolumn">
 <p>Matching professors:</p>
 <article>
     {% for professor in professor_list %}
-    <li><a href = "{{url_for('professor', department=professor.dept, professor=professor.pid)}}">{{professor.name}}</a></li>
+    <ul>
+    <li class="list"><a href = "{{url_for('professor', department=professor.dept, professor=professor.pid)}}">{{professor.name}}</a></li>
+    </ul>
     {% endfor %}
 </article>
+</div>
 {% endblock %}

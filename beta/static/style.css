@@ -85,6 +85,11 @@ HTML {
     border-radius: 5px;
     cursor: pointer;
   }
+
+  ul {
+    list-style-type: "➤  ";
+    color: #1a69a9;
+  }
   /* for a simple navbar.*/
   nav > ul {
     display: flex;
