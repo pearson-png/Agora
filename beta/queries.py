@@ -116,7 +116,7 @@ def get_section_post_allinfo(conn, course, professor):
             (SELECT name, pid FROM professors) Z
             on X.prof=Z.pid
             )
-        where Y.courseid = %s and Z.pid = %s
+        where Y.courseid = %s and professors.pid = %s
         order by time desc 
         limit 50''', [course, professor])
     return curs.fetchall()
@@ -390,36 +390,54 @@ def get_comments(conn, postid):
         order by time asc''', [postid])
     return curs.fetchall()
 
-def update_post_votes(conn,postid,votes):
+
+def update_post_votes(conn,postid,votes,user):
     '''Updates posts table to modify votes for post with postid'''
     curs = dbi.dict_cursor(conn)
-    if votes == 'up':
-        curs.execute(''' 
-            UPDATE posts 
-            SET upvotes = upvotes + 1 
-            WHERE postid = %s''', [postid])
-    if votes == 'down':
-        curs.execute(''' 
-            UPDATE posts 
-            SET downvotes = downvotes + 1 
-            WHERE postid = %s''', [postid])
-    conn.commit()
+    try:
+        curs.execute('''
+        INSERT INTO post_votes(postid, user, kind)
+        VALUES (%s,%s,%s)
+         ''', [postid, user, votes])
 
-def update_comment_votes(conn,commentid,votes):
+        if votes == 'up':
+            curs.execute(''' 
+                UPDATE posts 
+                SET upvotes = upvotes + 1 
+                WHERE postid = %s''', [postid])
+        if votes == 'down':
+            curs.execute(''' 
+                UPDATE posts 
+                SET downvotes = downvotes + 1 
+                WHERE postid = %s''', [postid])
+        
+        conn.commit()
+    except:
+        return("Can't vote twice")
+        
+def update_comment_votes(conn,commentid,votes,user):
     '''Updates comment table to modify votes for comment with commentid'''
     curs = dbi.dict_cursor(conn)
-    if votes == 'up':
-        curs.execute(''' 
+    try:
+        curs.execute('''
+        INSERT INTO comment_votes(commentid, user, kind)
+        VALUES (%s,%s,%s)
+         ''', [commentid, user, votes])
+
+        if votes == 'up':
+            curs.execute(''' 
             UPDATE comments 
             SET upvotes = upvotes + 1 
             WHERE commentid = %s''', [commentid])
-    if votes == 'down':
-        curs.execute(''' 
-            UPDATE comments 
-            SET downvotes = downvotes + 1 
-            WHERE commentid = %s''', [commentid])
-    conn.commit()
-
+        if votes == 'down':
+            curs.execute(''' 
+                UPDATE comments 
+                SET downvotes = downvotes + 1 
+                WHERE commentid = %s''', [commentid])
+        conn.commit()
+    except:
+        return("Can't vote twice")
+        
 
 def check_username(conn, name):
     '''Returns a dictionary of user info with the given username'''
