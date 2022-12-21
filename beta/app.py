@@ -65,44 +65,7 @@ def home():
         departments = departments, courses = courses, 
         professors = professors, posts = posts)
     if request.method == 'POST':
-        #redirects according to filter options to dept/prof/course route
-        filters = request.form
-        dept = filters['department']
-        prof = filters['professor']
-        course = filters['course']
-        search = filters['search']
-        ##options here
-        if dept == "0":
-            if search != 'None':
-                return redirect(url_for('search', department=dept, 
-                query=search))
-            #if no dept chosen, and no search entered, reload the homepage no 
-            # matter other fields
-            departments = queries.find_depts(conn)
-            professors = {}
-            courses = {}
-            posts = queries.recent_posts(conn)
-            flash("Please choose a department or fill in the search box")
-            return render_template('home_page.html',title='Hello', 
-            departments = departments, courses = courses, 
-            professors = professors, posts = posts)
-        elif prof == "0" and course == "0":
-            if search != 'None':
-                return redirect(url_for('search', department=dept, 
-                query=search))
-            #if only department chosen, direct to dept page
-            return redirect(url_for('department', department=dept))
-        elif course == "0" and prof != "0":
-            #if only prof chosen, direct to prof page
-            return redirect(url_for('professor', department=dept, 
-            professor=prof))
-        elif course != "0" and prof == "0":
-            #if only course chosen, direct to course page
-            return redirect(url_for('course', department=dept, course=course))
-        else:
-            #if all three were chosen, give specific prof and course page
-            return redirect(url_for('course_section', department=dept,
-            professor=prof, course=course))
+        return helper.postFilterForm(conn, request.form)
 
 @app.route('/search/<department>/<query>', methods=['GET'])
 def search(department, query):
@@ -254,6 +217,7 @@ def view_post(postid):
         prof_rating=prof_rating, text=text, time=time, comments=comments) 
 
 @app.route('/upvote-post/<postid>', methods=['GET', 'POST'])
+#do in the query to make thread safe, same with downvotes ( makes sure there's no duplicate id's check for this in query)
 def post_upvote(postid):
     conn = dbi.connect()
     upvotesDict = queries.get_post_upvotes(conn,postid)
@@ -452,53 +416,70 @@ def update_upload_form():
 @app.route('/<department>')
 def department(department):
     conn = dbi.connect()
-    course_list = queries.find_dept_course(conn, department)
-    dept_name = queries.find_dept_name(conn, department)
-    if len(course_list) == 0 and len(dept_name) ==0:
-        flash("No matching courses found")
-        return redirect(url_for('home'))
-    return render_template('department.html', course_list=course_list, 
-    abbrv=department, name=dept_name['name'])
+    if request.method == 'GET':
+        dept_name = queries.find_dept_name(conn, department)
+        departments = queries.find_depts(conn)
+        professors = {}
+        courses = {}
+        posts = queries.get_dept_post_allinfo(conn, department)
+        return render_template('department.html',page_title='Hello', 
+        departments = departments, courses = courses, 
+        professors = professors, posts = posts, 
+        #returning NoneType but still works
+        name=dept_name['name'])
+    if request.method == 'POST':
+        return helper.postFilterForm(conn, request.form)
 
 @app.route('/professor/<department>/<professor>')
 def professor(department, professor):
     conn = dbi.connect()
-    name = queries.find_prof_name(conn, department,professor)
-    if len(name)==0:
-        flash('Department and professor don\'t match, try again.')
-        return redirect(url_for('home'))
-    posts = queries.find_prof_posts(conn, professor)
-    rating = queries.find_prof_avgrating(conn, professor)
-    return render_template('professor.html', prof_name=name['name'], 
-    department=department, avg_rating=rating, posts=posts)
+    if request.method == 'GET':
+        name = queries.find_prof_name(conn,professor)
+        departments = queries.find_depts(conn)
+        professors = {}
+        courses = {}
+        rating = queries.find_prof_avgrating(conn, professor)
+        posts = queries.get_prof_post_allinfo(conn, professor)
+        return render_template('professor.html', 
+        departments = departments, courses = courses, 
+        professors = professors, posts = posts, avg_rating=rating,
+        #returning NoneType but still works
+        prof_name=name['name'])
+    if request.method == 'POST':
+        return helper.postFilterForm(conn, request.form)
 
 @app.route('/course/<department>/<course>')
 def course(department, course):
     conn = dbi.connect()
-    course_info = queries.find_course_info(conn, department,course)
-    if len(course_info)==0:
-        flash('Department and course don\'t match, try again.')
-        return redirect(url_for('home'))
-    posts = queries.find_course_posts(conn, course)
-    rating = queries.find_course_avgrating(conn, course)
-    #rating = 5
-    return render_template('course.html', code=course_info['courseid'], course=
-    course_info['title'], department=course_info['dept'], avg_rating=rating,
-    posts=posts)
+    if request.method == 'GET':
+        course_info = queries.find_course_info(conn,course)
+        departments = queries.find_depts(conn)
+        professors = {}
+        courses = {}
+        rating = queries.find_course_avgrating(conn, course)
+        posts = queries.get_course_post_allinfo(conn, course)
+        return render_template('course.html', code=course_info['courseid'], course=
+        course_info['title'], avg_rating=rating,
+        departments = departments, courses = courses, 
+        professors = professors, posts = posts)
+    if request.method == 'POST':
+        return helper.postFilterForm(conn, request.form)
 
 @app.route('/course-section/<department>/<professor>/<course>')
 def course_section(department, professor, course):
     conn = dbi.connect()
-    course_info = queries.find_course_info(conn, department,course)
-    prof_info = queries.find_prof_name(conn, department,professor)
-    if len(course_info)==0 or len(prof_info)==0:
-        flash('Department and course/professor don\'t match, try again.')
-        return redirect(url_for('home'))
-    posts = queries.find_course_section_posts(conn, course, professor)
-    #rating = 5
-    return render_template('course-section.html', code=course_info['code'],
-    course=course_info['title'], prof=prof_info['name'], 
-    department=course_info['dept'], posts=posts)
+    if request.method == 'GET':
+        course_info = queries.find_course_info(conn,course)
+        prof_info = queries.find_prof_name(conn,professor)
+        departments = queries.find_depts(conn)
+        professors = {}
+        courses = {}
+        posts = queries.get_section_post_allinfo(conn, course, professor)
+        return render_template('course-section.html', code=course_info['courseid'], course=
+        course_info['title'], departments = departments, courses = courses, 
+        professors = professors, posts=posts, prof=prof_info['name'])
+    if request.method == 'POST':
+        return helper.postFilterForm(conn, request.form)
 
 @app.route('/change-username', methods=['GET','POST'])
 def change_username():

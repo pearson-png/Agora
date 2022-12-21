@@ -1,10 +1,18 @@
 {% extends "base.html" %}
 
 {% block main_content %}
-<p>{{abbrv}} {{name}}: Course listing</p>
-<article>
-    {% for course in course_list %}
-    <li><a href = "{{url_for('course', department=course.dept, course=course.courseid)}}">{{course.code}} {{course.title}}</a></li>
-    {% endfor %}
-</article>
+<p>{{name}}: Posts</p>
+{% for post in posts %}
+<div class="card rightcolumn"> 
+    <h1> <a href="{{url_for('view_post', postid = post.postid)}}">View Post</a> </h1>
+    <h2>Professor: {{ post.name }} | Rating: {{ post.prof_rating }} </h2>
+    <h2>Course: {{ post.title }} | Rating: {{ post.course_rating}} </h2>
+    <h5>Posted by: {{ post.username }} | At: {{ post.time }}</h5>
+    <p> {{ post.text }}</p>
+    <h3>
+        <a href="{{url_for('post_upvote', postid=post.postid)}}">Upvote: </a> {{ post.upvotes }} | 
+        <a href="{{url_for('post_downvote', postid=post.postid)}}">Downvote: </a> {{ post.downvotes }} 
+    </h3>
+</div>
+{% endfor %}
 {% endblock %}
