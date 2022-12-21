@@ -228,10 +228,10 @@ def view_post(postid):
 
 
 @app.route('/vote-post/<postid>/<vote>', methods=['GET', 'POST'])
-#do in the query to make thread safe, same with downvotes ( makes sure there's no duplicate id's check for this in query)
 def post_vote(postid,vote):
     conn = dbi.connect()
-    queries.update_post_votes(conn,postid,vote)
+    user = session.get('uid')
+    queries.update_post_votes(conn,postid,vote,user)
     return redirect(url_for('home'))
 
 
@@ -295,10 +295,10 @@ def comment(postid):
 
 
 @app.route('/vote-comment/<postid>/<commentid>/<vote>', methods=['GET', 'POST'])
-#do in the query to make thread safe, same with downvotes ( makes sure there's no duplicate id's check for this in query)
 def comment_vote(postid,commentid,vote):
+    user = session.get('uid')
     conn = dbi.connect()
-    queries.update_comment_votes(conn,commentid,vote)
+    queries.update_comment_votes(conn,commentid,vote,user)
     return redirect(url_for('view_post', postid=postid))
 
         
