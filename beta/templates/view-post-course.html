@@ -11,18 +11,20 @@
 <div class="card">
     <h2> Course: {{ course_code }} - {{course_name}}| Rating: {{ course_rating}} </h2>
     <h5>Posted by: {{ user }} | At: {{ time }}</h5>
-    <p>Text: {{ text }}</p>
-    <!-- How to fill in the post id here? -->
+    <p>{{ text }}</p>
     <a href="{{url_for('comment', postid=postid)}}">Leave a Comment</a> 
+    <h3>
+      <a href="{{url_for('post_vote', postid=postid, vote='up')}}">Upvote: </a> {{ upvotes }} | 
+      <a href="{{url_for('post_vote', postid=postid, vote='down')}}">Downvote: </a> {{ downvotes }} 
+  </h3>
 </div>
 
 {% for comment in comments %}
 <div class="card">  
-    <h3>Posted by: {{ comment.user }} | At: {{ comment.time }}</h3>
-    <p>Text: {{ comment.text }}</p>
-    <h3><a href="{{url_for('comment_upvote', postid=postid, commentid=comment.commentid)}}">Upvote: </a> {{ comment.upvotes }} | 
-      <a href="{{url_for('comment_downvote', postid=postid, commentid=comment.commentid)}}">Downvote: </a> {{ comment.downvotes }} </h3>
-</div>
+    <h3>Posted by: {{ comment.username }} | At: {{ comment.time }}</h3>
+    <p>{{ comment.text }}</p>
+    <h3><a href="{{url_for('comment_vote', postid=postid, commentid=comment.commentid, vote='up')}}">Upvote: </a> {{ comment.upvotes }} | 
+        <a href="{{url_for('comment_vote', postid=postid, commentid=comment.commentid, vote='down')}}">Downvote: </a> {{ comment.downvotes }} </h3>
 {% endfor %}
 
 {% endblock %}

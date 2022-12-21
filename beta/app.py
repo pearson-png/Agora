@@ -50,6 +50,7 @@ def home():
     # look at uid in session specifically
     # check if logged in for all routes
     if not session.get('uid'):
+        print(session.get('uid'))
         return redirect(url_for('my_login'))
 
     # uid = session.get('uid')
@@ -59,51 +60,12 @@ def home():
         departments = queries.find_depts(conn)
         professors = {}
         courses = {}
-        # professors = queries.find_profs(conn)
-        # courses = queries.find_courses(conn)
-        posts = queries.recent_posts(conn)
+        posts = queries.get_recent_post_allinfo(conn)
         return render_template('home_page.html',page_title='Hello', 
         departments = departments, courses = courses, 
         professors = professors, posts = posts)
     if request.method == 'POST':
-        #redirects according to filter options to dept/prof/course route
-        filters = request.form
-        dept = filters['department']
-        prof = filters['professor']
-        course = filters['course']
-        search = filters['search']
-        ##options here
-        if dept == "0":
-            if search != 'None':
-                return redirect(url_for('search', department=dept, 
-                query=search))
-            #if no dept chosen, and no search entered, reload the homepage no 
-            # matter other fields
-            departments = queries.find_depts(conn)
-            professors = {}
-            courses = {}
-            posts = queries.recent_posts(conn)
-            flash("Please choose a department or fill in the search box")
-            return render_template('home_page.html',title='Hello', 
-            departments = departments, courses = courses, 
-            professors = professors, posts = posts)
-        elif prof == "0" and course == "0":
-            if search != 'None':
-                return redirect(url_for('search', department=dept, 
-                query=search))
-            #if only department chosen, direct to dept page
-            return redirect(url_for('department', department=dept))
-        elif course == "0" and prof != "0":
-            #if only prof chosen, direct to prof page
-            return redirect(url_for('professor', department=dept, 
-            professor=prof))
-        elif course != "0" and prof == "0":
-            #if only course chosen, direct to course page
-            return redirect(url_for('course', department=dept, course=course))
-        else:
-            #if all three were chosen, give specific prof and course page
-            return redirect(url_for('course_section', department=dept,
-            professor=prof, course=course))
+        return helper.postFilterForm(conn, request.form)
 
 @app.route('/search/<department>/<query>', methods=['GET'])
 def search(department, query):
@@ -204,35 +166,38 @@ def logout():
 #view individual posts
 def view_post(postid):
     conn = dbi.connect()
-    # if user clicks on a post
-    #always include these in all posts
-    user = queries.post_user(conn, postid)['username']
-    text = queries.post_text(conn,postid)['text']
-    time = queries.post_time(conn,postid)['time']
+    #query 1 gets all post info, always include these in all posts
+    postInfo = queries.get_post_info(conn, postid)
+    
+    user = postInfo['username']
+    text = postInfo['text']
+    time = postInfo['time']
+    upvotes = postInfo['upvotes']
+    downvotes = postInfo['downvotes']
+
+    #query 2, loads all comments for given post
     comments = queries.get_comments(conn,postid)
 
-    #course variables
-    try:
-        course_code = queries.post_course_code(conn, postid)['code']
-    except TypeError:
+    #query 3, gets all course info
+    courseInfo = queries.get_course_info(conn,postid)
+
+    if courseInfo != None:
+        course_code = courseInfo['code']
+        course_name = courseInfo['title']
+        course_rating = courseInfo['course_rating']
+    else: 
         course_code = None
-    try:
-        course_name = queries.post_course_name(conn,postid)['title']
-    except TypeError:
         course_name = None
-    try:
-        course_rating = queries.post_course_rating(conn, postid)\
-            ['course_rating']
-    except TypeError:
         course_rating = None
-    #professor variables
-    try:
-        prof_name = queries.post_prof_name(conn, postid)['name']
-    except TypeError:
+    
+    #query 4 gets all of the prof info 
+    profInfo = queries.get_prof_info(conn,postid)
+    
+    if profInfo != None:
+        prof_name = profInfo['name']
+        prof_rating = profInfo['prof_rating']
+    else:
         prof_name = None
-    try:
-        prof_rating = queries.post_prof_rating(conn, postid)['prof_rating']
-    except TypeError:
         prof_rating = None
     
     #if there is no professor 
@@ -240,44 +205,27 @@ def view_post(postid):
         return render_template('view-post-course.html', postid=postid, 
         user=user, course_name=course_name, 
         course_code=course_code, course_rating=course_rating, text=text,
-        time=time, comments=comments)
+        time=time, comments=comments, upvotes=upvotes, downvotes=downvotes)
     #if there is no course
     elif course_code == None:
         return render_template('view-post-prof.html', postid=postid, 
         user=user, prof_name=prof_name, prof_rating=prof_rating, text=text,
-        time=time, comments=comments)
+        time=time, comments=comments, upvotes=upvotes, downvotes=downvotes)
     #if there is a prof and a course
     else:
         return render_template('view-post-prof-course.html', postid=postid,
         user=user, course_name=course_name, course_code=course_code,
         course_rating=course_rating, prof_name=prof_name, 
-        prof_rating=prof_rating, text=text, time=time, comments=comments) 
+        prof_rating=prof_rating, text=text, time=time, comments=comments, upvotes=upvotes, downvotes=downvotes) 
 
-@app.route('/upvote-post/<postid>', methods=['GET', 'POST'])
-def post_upvote(postid):
+
+@app.route('/vote-post/<postid>/<vote>', methods=['GET', 'POST'])
+#do in the query to make thread safe, same with downvotes ( makes sure there's no duplicate id's check for this in query)
+def post_vote(postid,vote):
     conn = dbi.connect()
-    upvotesDict = queries.get_post_upvotes(conn,postid)
-    if upvotesDict['upvotes'] == None:
-        upvotes = 1
-        queries.update_post_upvotes(conn,postid,upvotes)
-        
-    else:
-        upvotes = upvotesDict['upvotes'] + 1
-        queries.update_post_upvote(conn,postid,upvotes)
+    queries.update_post_votes(conn,postid,vote)
     return redirect(url_for('home'))
 
-@app.route('/downvote-post/<postid>', methods=['GET', 'POST'])
-def post_downvote(postid):
-    conn = dbi.connect()
-    downvotesDict = queries.get_post_downvotes(conn,postid)
-    if downvotesDict['downvotes'] == None:
-        downvotes = 1
-        queries.update_post_downvotes(conn,postid,downvotes)
-        
-    else:
-        downvotes = downvotesDict['downvotes'] + 1
-        queries.update_post_downvotes(conn,postid,downvotes)
-    return redirect(url_for('home'))
 
 @app.route('/comment/<postid>', methods=['GET', 'POST'])
 def comment(postid):
@@ -311,20 +259,12 @@ def comment(postid):
             # go to post page
             return redirect(url_for('view_post', postid=postid))
 
-@app.route('/upvote-comment/<postid>/<commentid>', methods=['GET', 'POST'])
-def comment_upvote(postid,commentid):
-    conn = dbi.connect()
-    upvotes = queries.get_comment_upvotes(conn,commentid)
-    upvotes = upvotes['upvotes'] + 1
-    queries.update_comment_upvotes(conn,commentid,upvotes)
-    return redirect(url_for('view_post', postid=postid))
 
-@app.route('/downvote-comment/<postid>/<commentid>', methods=['GET', 'POST'])
-def comment_downvote(postid,commentid):
+@app.route('/vote-comment/<postid>/<commentid>/<vote>', methods=['GET', 'POST'])
+#do in the query to make thread safe, same with downvotes ( makes sure there's no duplicate id's check for this in query)
+def comment_vote(postid,commentid,vote):
     conn = dbi.connect()
-    downvotes = queries.get_comment_downvotes(conn,commentid)
-    downvotes = downvotes['downvotes'] + 1
-    queries.update_comment_downvotes(conn,commentid,downvotes)
+    queries.update_comment_votes(conn,commentid,vote)
     return redirect(url_for('view_post', postid=postid))
 
         
@@ -350,6 +290,8 @@ def upload():
         prof_rating = request.form['prof-rating']
         course_rating = request.form['course-rating']
         review_text = request.form['review-text']
+        upvotes = 0
+        downvotes = 0
 
         # upload file
         f = request.files['pdf']
@@ -412,13 +354,13 @@ def upload():
         # upload post
         if profid == '':
             postid = queries.add_course_post(conn, time, uid, courseid, 
-            course_rating, review_text, fileid, username)['last_insert_id()']
+            course_rating, review_text, fileid, username, upvotes, downvotes)['last_insert_id()']
         elif courseid == '':
             postid = queries.add_prof_post(conn, time, uid, profid, prof_rating
-            , review_text, fileid, username)['last_insert_id()']
+            , review_text, fileid, username, upvotes, downvotes)['last_insert_id()']
         else:
             postid = queries.add_post(conn, time, uid, courseid, profid, 
-            prof_rating, course_rating, review_text, fileid, username)['last_insert_id()']
+            prof_rating, course_rating, review_text, fileid, username, upvotes, downvotes)['last_insert_id()']
 
         flash('Upload successful')
         # go to post page
@@ -452,53 +394,70 @@ def update_upload_form():
 @app.route('/<department>')
 def department(department):
     conn = dbi.connect()
-    course_list = queries.find_dept_course(conn, department)
-    dept_name = queries.find_dept_name(conn, department)
-    if len(course_list) == 0 or len(dept_name) ==0:
-        flash("No matching courses found")
-        return redirect(url_for('home'))
-    return render_template('department.html', course_list=course_list, 
-    abbrv=department, name=dept_name['name'])
+    if request.method == 'GET':
+        dept_name = queries.find_dept_name(conn, department)
+        departments = queries.find_depts(conn)
+        professors = {}
+        courses = {}
+        posts = queries.get_dept_post_allinfo(conn, department)
+        return render_template('department.html',page_title='Hello', 
+        departments = departments, courses = courses, 
+        professors = professors, posts = posts, 
+        #returning NoneType but still works
+        name=dept_name['name'])
+    if request.method == 'POST':
+        return helper.postFilterForm(conn, request.form)
 
 @app.route('/professor/<department>/<professor>')
 def professor(department, professor):
     conn = dbi.connect()
-    name = queries.find_prof_name(conn, department,professor)
-    if len(name)==0:
-        flash('Department and professor don\'t match, try again.')
-        return redirect(url_for('home'))
-    posts = queries.find_prof_posts(conn, professor)
-    rating = queries.find_prof_avgrating(conn, professor)
-    return render_template('professor.html', prof_name=name['name'], 
-    department=department, avg_rating=rating, posts=posts)
+    if request.method == 'GET':
+        name = queries.find_prof_name(conn,professor)
+        departments = queries.find_depts(conn)
+        professors = {}
+        courses = {}
+        rating = queries.find_prof_avgrating(conn, professor)
+        posts = queries.get_prof_post_allinfo(conn, professor)
+        return render_template('professor.html', 
+        departments = departments, courses = courses, 
+        professors = professors, posts = posts, avg_rating=rating,
+        #returning NoneType but still works
+        prof_name=name['name'])
+    if request.method == 'POST':
+        return helper.postFilterForm(conn, request.form)
 
 @app.route('/course/<department>/<course>')
 def course(department, course):
     conn = dbi.connect()
-    course_info = queries.find_course_info(conn, department,course)
-    if len(course_info)==0:
-        flash('Department and course don\'t match, try again.')
-        return redirect(url_for('home'))
-    posts = queries.find_course_posts(conn, course)
-    rating = queries.find_course_avgrating(conn, course)
-    #rating = 5
-    return render_template('course.html', code=course_info['courseid'], course=
-    course_info['title'], department=course_info['dept'], avg_rating=rating,
-    posts=posts)
+    if request.method == 'GET':
+        course_info = queries.find_course_info(conn,course)
+        departments = queries.find_depts(conn)
+        professors = {}
+        courses = {}
+        rating = queries.find_course_avgrating(conn, course)
+        posts = queries.get_course_post_allinfo(conn, course)
+        return render_template('course.html', code=course_info['code'], course=
+        course_info['title'], avg_rating=rating,
+        departments = departments, courses = courses, 
+        professors = professors, posts = posts)
+    if request.method == 'POST':
+        return helper.postFilterForm(conn, request.form)
 
 @app.route('/course-section/<department>/<professor>/<course>')
 def course_section(department, professor, course):
     conn = dbi.connect()
-    course_info = queries.find_course_info(conn, department,course)
-    prof_info = queries.find_prof_name(conn, department,professor)
-    if len(course_info)==0 or len(prof_info)==0:
-        flash('Department and course/professor don\'t match, try again.')
-        return redirect(url_for('home'))
-    posts = queries.find_course_section_posts(conn, course, professor)
-    #rating = 5
-    return render_template('course-section.html', code=course_info['code'],
-    course=course_info['title'], prof=prof_info['name'], 
-    department=course_info['dept'], posts=posts)
+    if request.method == 'GET':
+        course_info = queries.find_course_info(conn,course)
+        prof_info = queries.find_prof_name(conn,professor)
+        departments = queries.find_depts(conn)
+        professors = {}
+        courses = {}
+        posts = queries.get_section_post_allinfo(conn, course, professor)
+        return render_template('course-section.html', code=course_info['code'], course=
+        course_info['title'], departments = departments, courses = courses, 
+        professors = professors, posts=posts, prof=prof_info['name'])
+    if request.method == 'POST':
+        return helper.postFilterForm(conn, request.form)
 
 @app.route('/change-username', methods=['GET','POST'])
 def change_username():
@@ -506,15 +465,16 @@ def change_username():
     #get uid
     uid = session.get('uid')
     #get new name
-    new_name = helper.random_username()
+    new_name = helper.random_username(usernames_dict)
     #check if name exist
     check = queries.check_username(conn, new_name)
     #if not none, the name exists, try again until you get a free name
     while check != None:
-        new_name = helper.random_username()
+        new_name = helper.random_username(usernames_dict)
         check = queries.check_username(conn, new_name)
     queries.update_username(conn, uid, new_name)
-    flash('Your username has been changed.')
+
+    flash('Your new username is {}.'.format(new_name))
     return redirect(url_for('home'))
 
 @app.before_first_request
