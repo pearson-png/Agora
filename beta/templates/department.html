@@ -10,6 +10,9 @@
     <h2>Course: {{ post.title }} | Rating: {{ post.course_rating}} </h2>
     <h5>Posted by: {{ post.username }} | At: {{ post.time }}</h5>
     <p> {{ post.text }}</p>
+    {% if post.attachments %}
+        <p>Attachment: {{ post.attachments }}</p>
+    {% endif %}
     <h3>
         <a href="{{url_for('post_vote', postid=post.postid, vote='up')}}">Upvote: </a> {{ post.upvotes }} | 
         <a href="{{url_for('post_vote', postid=post.postid, vote='down')}}">Downvote: </a> {{ post.downvotes }} 

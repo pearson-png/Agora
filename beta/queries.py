@@ -6,15 +6,16 @@ import helper
 def get_recent_post_allinfo(conn):
     '''Returns postid, username, text, timestamp, 
         course code, course title, course rating
-        prof name, prof rating, from recent posts'''
+        prof name, prof rating, and attachments from recent posts'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
         SELECT X.postid, X.username, X.text, X.time, Y.code,
         Y.title, X.course_rating, Z.name, X.prof_rating,
-        X.upvotes, X.downvotes
+        X.upvotes, X.downvotes, X.attachments
         from ( 
             (SELECT postid, username, text, time, upvotes, downvotes,
-                course, prof, prof_rating,course_rating FROM posts) X
+                course, prof, prof_rating,course_rating, attachments
+                FROM posts) X
             LEFT OUTER JOIN
             (SELECT code, title, courseid FROM courses) Y 
             on X.course=Y.courseid
@@ -28,15 +29,16 @@ def get_recent_post_allinfo(conn):
 def get_dept_post_allinfo(conn, department):
     '''Returns postid, username, text, timestamp, 
         course code, course title, course rating
-        prof name, prof rating, from matching dept posts'''
+        prof name, prof rating, attachments from matching dept posts'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
         SELECT X.postid, X.username, X.text, X.time, Y.code,
             Y.title, X.course_rating, Z.name, X.prof_rating,
-            X.upvotes, X.downvotes
+            X.upvotes, X.downvotes, X.attachments
         from ( 
             (SELECT postid, username, text, time, upvotes, downvotes,
-                course, prof, prof_rating,course_rating FROM posts) X
+                course, prof, prof_rating,course_rating, attachments 
+                FROM posts) X
             LEFT OUTER JOIN
             (SELECT code, title, courseid, dept FROM courses) Y 
             on X.course=Y.courseid
@@ -52,15 +54,16 @@ def get_dept_post_allinfo(conn, department):
 def get_prof_post_allinfo(conn, professor):
     '''Returns postid, username, text, timestamp, 
         course code, course title, course rating
-        prof name, prof rating, from matching prof posts'''
+        prof name, prof rating,attachments from matching prof posts'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
         SELECT X.postid, X.username, X.text, X.time, Y.code,
         Y.title, X.course_rating, Z.name, X.prof_rating,
-        X.upvotes, X.downvotes
+        X.upvotes, X.downvotes, X.attachments
         from ( 
             (SELECT postid, username, text, time, upvotes, downvotes,
-                course, prof, prof_rating,course_rating FROM posts) X
+                course, prof, prof_rating,course_rating, attachments
+                FROM posts) X
             LEFT OUTER JOIN
             (SELECT code, title, courseid FROM courses) Y 
             on X.course=Y.courseid
@@ -76,15 +79,16 @@ def get_prof_post_allinfo(conn, professor):
 def get_course_post_allinfo(conn, course):
     '''Returns postid, username, text, timestamp, 
         course code, course title, course rating
-        prof name, prof rating, from matching prof posts'''
+        prof name, prof rating, attachments from matching prof posts'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
         SELECT X.postid, X.username, X.text, X.time, Y.code,
         Y.title, X.course_rating, Z.name, X.prof_rating,
-        X.upvotes, X.downvotes
+        X.upvotes, X.downvotes, X.attachments
         from ( 
             (SELECT postid, username, text, time, upvotes, downvotes,
-                course, prof, prof_rating,course_rating FROM posts) X
+                course, prof, prof_rating,course_rating, attachments
+                FROM posts) X
             LEFT OUTER JOIN
             (SELECT code, title, courseid FROM courses) Y 
             on X.course=Y.courseid
@@ -100,15 +104,16 @@ def get_course_post_allinfo(conn, course):
 def get_section_post_allinfo(conn, course, professor):
     '''Returns postid, username, text, timestamp, 
         course code, course title, course rating
-        prof name, prof rating, from matching prof and course posts'''
+        prof name, prof rating, attachments from matching prof and course posts'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
         SELECT X.postid, X.username, X.text, X.time, Y.code,
         Y.title, X.course_rating, Z.name, X.prof_rating,
-        X.upvotes, X.downvotes
+        X.upvotes, X.downvotes, X.attachments
         from ( 
             (SELECT postid, username, text, time, upvotes, downvotes,
-                course, prof, prof_rating,course_rating FROM posts) X
+                course, prof, prof_rating,course_rating, attachments 
+                FROM posts) X
             LEFT OUTER JOIN
             (SELECT code, title, courseid FROM courses) Y 
             on X.course=Y.courseid
