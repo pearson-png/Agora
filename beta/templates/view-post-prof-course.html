@@ -12,6 +12,9 @@
     <h2> Course: {{ course_code }} - {{course_name}}| Rating: {{ course_rating}} </h2>
     <h5>Posted by: {{ user }} | At: {{ time }}</h5>
     <p> {{ text }}</p>
+    {% if filepath %}
+      <a href="{{url_for('view_file', filepath=filepath)}}">Attachment: {{filepath}}</a> <br><br>
+    {% endif %}
     <a href="{{url_for('comment', postid=postid)}}">Leave a Comment</a> 
     <h3>
         <a href="{{url_for('post_vote', postid=postid, vote='up')}}">Upvote: </a> {{ upvotes }} | 
@@ -24,6 +27,9 @@
 <div class="card">  
     <h3>Posted by: {{ comment.username }} | At: {{ comment.time }}</h3>
     <p> {{ comment.text }}</p>
+    {% if comment.attachments %}
+      <a href="{{url_for('view_file', filepath=comment.attachments)}}">Attachment: {{comment.attachments}}</a> <br><br>
+    {% endif %}
     <h3><a href="{{url_for('comment_vote', postid=postid, commentid=comment.commentid, vote='up')}}">Upvote: </a> {{ comment.upvotes }} | 
       <a href="{{url_for('comment_vote', postid=postid, commentid=comment.commentid, vote='down')}}">Downvote: </a> {{ comment.downvotes }} 
     </h3>
