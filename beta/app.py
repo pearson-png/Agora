@@ -49,7 +49,8 @@ usernames_dict = {}
 def home():
     # look at uid in session specifically
     # check if logged in for all routes
-    if not session.get('uid'):
+    uid = session.get('uid')
+    if not uid:
         print(session.get('uid'))
         return redirect(url_for('my_login'))
 
@@ -107,14 +108,18 @@ def update_dropdown():
 @app.route('/my_login/')
 # change everywhere tp my_login
 def my_login():
-    return render_template('login.html', title = 'Title')
+    if session.get('uid'):
+        session['uid'] = session.get('uid')
+        return redirect(url_for('home'))
+    else:
+        return render_template('login.html')
 
 @app.route('/after_login/')
 def after_login():
     # if uid already in session, can delete later but shows functionality
     if session.get('uid'): 
         flash('redirecting from login, uid already in session')
-        return redirect(url_for('home', title = 'Title'))
+        return redirect(url_for('home'))
 
     conn = dbi.connect()
     email = session['CAS_ATTRIBUTES']['cas:mail']
@@ -134,7 +139,7 @@ def after_login():
         # print('redirecting from after_login, user already registered')
         session['uid'] = uid
         flash('Welcome back, you are logged in.')
-        return redirect(url_for('home', title = 'Title'))
+        return redirect(url_for('home'))
     # turn back on if scott isnt grading
     # elif email == 'sanderso@wellesley.edu' or session['CAS_ATTRIBUTES']\
     #     ['cas:isStudent'] == 'Y':
@@ -144,7 +149,7 @@ def after_login():
     #     uid = uid_dic['last_insert_id()']
     #     # print('new user uid: ', uid)
     #     session['uid'] = uid
-    #     return redirect(url_for('home', title = 'Title'))
+    #     return redirect(url_for('home'))
     # else: 
     #     flash('You must be a Wellesley College student to use Agora.')
     #     return redirect(url_for('my_login'))
@@ -154,7 +159,7 @@ def after_login():
         uid = uid_dic['last_insert_id()']
         # print('new user uid: ', uid)
         session['uid'] = uid
-        return redirect(url_for('home', title = 'Title'))
+        return redirect(url_for('home'))
 
 @app.route('/logout/')
 def logout():
@@ -323,9 +328,12 @@ def upload():
                 user_filename = f.filename
                 # make file name the uid plus the input file name
                 filename = secure_filename('{}_{}'.format(uid, user_filename))
+                print('filename: ',filename)
                 pathname = os.path.join(app.config['UPLOADS'],filename)
+                print('pathname: ',pathname)
                 f.save(pathname)
                 fileid = queries.add_file(conn, uid, filename)
+                print('file added')
                 fileid = fileid['last_insert_id()']
             
             except Exception as err:
@@ -387,6 +395,10 @@ def upload():
         flash('Upload successful')
         # go to post page
         return redirect(url_for('view_post', postid=postid))
+
+@app.route('/view-file/<path:filename>')
+def view_file(filename):
+    return send_from_directory(app.config['UPLOADS'], filename)
 
 @app.route('/update_upload_form')
 def update_upload_form():
