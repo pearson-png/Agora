@@ -33,7 +33,7 @@ HTML {
     font-weight: 600;
   }
 
-  h1{
+  h1, h2{
     color: var(--color-header);
   }
   
@@ -84,6 +84,11 @@ HTML {
     margin: 4px 2px;
     border-radius: 5px;
     cursor: pointer;
+  }
+
+  ul {
+    list-style-type: "➤  ";
+    color: #1a69a9;
   }
   /* for a simple navbar.*/
   nav > ul {

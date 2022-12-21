@@ -4,7 +4,7 @@
 <h1>{{prof_name}}</h1>
 <h2>Average Rating: {{avg_rating}}</h2>
 {% for post in posts %}
-<div class="card rightcolumn"> 
+<div class="card"> 
     <h1> <a href="{{url_for('view_post', postid = post.postid)}}">View Post</a> </h1>
     <h2>Professor: {{ post.name }} | Rating: {{ post.prof_rating }} </h2>
     <h2>Course: {{ post.title }} | Rating: {{ post.course_rating}} </h2>
