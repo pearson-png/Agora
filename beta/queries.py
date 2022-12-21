@@ -31,14 +31,22 @@ def get_dept_post_allinfo(conn, department):
         prof name, prof rating, from matching dept posts'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
-        select postid,username, text, time, code
-        title, course_rating, name, prof_rating, upvotes, downvotes
-        from posts 
-        inner join courses on posts.course=courses.courseid
-        inner join professors on posts.prof=professors.pid
-        where courses.dept = %s
+        SELECT X.postid, X.username, X.text, X.time, Y.code,
+            Y.title, X.course_rating, Z.name, X.prof_rating,
+            X.upvotes, X.downvotes
+        from ( 
+            (SELECT postid, username, text, time, upvotes, downvotes,
+                course, prof, prof_rating,course_rating FROM posts) X
+            LEFT OUTER JOIN
+            (SELECT code, title, courseid, dept FROM courses) Y 
+            on X.course=Y.courseid
+            LEFT OUTER JOIN
+            (SELECT name, pid, dept FROM professors) Z
+            on X.prof=Z.pid
+            )
+        where Y.dept = %s or Z.dept = %s
         order by time desc 
-        limit 50''', [department])
+        limit 50''', [department, department])
     return curs.fetchall()
 
 def get_prof_post_allinfo(conn, professor):
@@ -47,12 +55,20 @@ def get_prof_post_allinfo(conn, professor):
         prof name, prof rating, from matching prof posts'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
-        select postid,username, text, time, code
-        title, course_rating, name, prof_rating, upvotes, downvotes
-        from posts 
-        inner join courses on posts.course=courses.courseid
-        inner join professors on posts.prof=professors.pid
-        where professors.pid = %s
+        SELECT X.postid, X.username, X.text, X.time, Y.code,
+        Y.title, X.course_rating, Z.name, X.prof_rating,
+        X.upvotes, X.downvotes
+        from ( 
+            (SELECT postid, username, text, time, upvotes, downvotes,
+                course, prof, prof_rating,course_rating FROM posts) X
+            LEFT OUTER JOIN
+            (SELECT code, title, courseid FROM courses) Y 
+            on X.course=Y.courseid
+            LEFT OUTER JOIN
+            (SELECT name, pid FROM professors) Z
+            on X.prof=Z.pid
+            )
+        where Z.pid = %s
         order by time desc 
         limit 50''', [professor])
     return curs.fetchall()
@@ -63,12 +79,20 @@ def get_course_post_allinfo(conn, course):
         prof name, prof rating, from matching prof posts'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
-        select postid,username, text, time, code
-        title, course_rating, name, prof_rating, upvotes, downvotes
-        from posts 
-        inner join courses on posts.course=courses.courseid
-        inner join professors on posts.prof=professors.pid
-        where courses.courseid = %s
+        SELECT X.postid, X.username, X.text, X.time, Y.code,
+        Y.title, X.course_rating, Z.name, X.prof_rating,
+        X.upvotes, X.downvotes
+        from ( 
+            (SELECT postid, username, text, time, upvotes, downvotes,
+                course, prof, prof_rating,course_rating FROM posts) X
+            LEFT OUTER JOIN
+            (SELECT code, title, courseid FROM courses) Y 
+            on X.course=Y.courseid
+            LEFT OUTER JOIN
+            (SELECT name, pid FROM professors) Z
+            on X.prof=Z.pid
+            )
+        where Y.courseid = %s
         order by time desc 
         limit 50''', [course])
     return curs.fetchall()
@@ -79,12 +103,20 @@ def get_section_post_allinfo(conn, course, professor):
         prof name, prof rating, from matching prof and course posts'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
-        select postid,username, text, time, code
-        title, course_rating, name, prof_rating, upvotes, downvotes
-        from posts 
-        inner join courses on posts.course=courses.courseid
-        inner join professors on posts.prof=professors.pid
-        where courses.courseid = %s and professors.pid = %s
+        SELECT X.postid, X.username, X.text, X.time, Y.code,
+        Y.title, X.course_rating, Z.name, X.prof_rating,
+        X.upvotes, X.downvotes
+        from ( 
+            (SELECT postid, username, text, time, upvotes, downvotes,
+                course, prof, prof_rating,course_rating FROM posts) X
+            LEFT OUTER JOIN
+            (SELECT code, title, courseid FROM courses) Y 
+            on X.course=Y.courseid
+            LEFT OUTER JOIN
+            (SELECT name, pid FROM professors) Z
+            on X.prof=Z.pid
+            )
+        where Y.courseid = %s and Z.pid = %s
         order by time desc 
         limit 50''', [course, professor])
     return curs.fetchall()
