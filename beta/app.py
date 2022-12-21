@@ -412,7 +412,7 @@ def department(department):
         professors = {}
         courses = {}
         posts = queries.get_dept_post_allinfo(conn, department)
-        return render_template('department.html',page_title='Hello', 
+        return render_template('department.html',page_title='Department Page', 
         departments = departments, courses = courses, 
         professors = professors, posts = posts, 
         #returning NoneType but still works
