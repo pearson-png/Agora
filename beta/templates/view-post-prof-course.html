@@ -24,7 +24,8 @@
     <h3>Posted by: {{ comment.username }} | At: {{ comment.time }}</h3>
     <p> {{ comment.text }}</p>
     <h3><a href="{{url_for('comment_vote', postid=postid, commentid=comment.commentid, vote='up')}}">Upvote: </a> {{ comment.upvotes }} | 
-      <a href="{{url_for('comment_vote', postid=postid, commentid=comment.commentid, vote='down')}}">Downvote: </a> {{ comment.downvotes }} </h3>
+      <a href="{{url_for('comment_vote', postid=postid, commentid=comment.commentid, vote='down')}}">Downvote: </a> {{ comment.downvotes }} 
+    </h3>
       
 </div>
 {% endfor %}
