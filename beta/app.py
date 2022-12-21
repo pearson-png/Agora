@@ -177,6 +177,8 @@ def view_post(postid):
     user = postInfo['username']
     text = postInfo['text']
     time = postInfo['time']
+    upvotes = postInfo['upvotes']
+    downvotes = postInfo['downvotes']
 
     #query 2, loads all comments for given post
     comments = queries.get_comments(conn,postid)
@@ -208,45 +210,27 @@ def view_post(postid):
         return render_template('view-post-course.html', postid=postid, 
         user=user, course_name=course_name, 
         course_code=course_code, course_rating=course_rating, text=text,
-        time=time, comments=comments)
+        time=time, comments=comments, upvotes=upvotes, downvotes=downvotes)
     #if there is no course
     elif course_code == None:
         return render_template('view-post-prof.html', postid=postid, 
         user=user, prof_name=prof_name, prof_rating=prof_rating, text=text,
-        time=time, comments=comments)
+        time=time, comments=comments, upvotes=upvotes, downvotes=downvotes)
     #if there is a prof and a course
     else:
         return render_template('view-post-prof-course.html', postid=postid,
         user=user, course_name=course_name, course_code=course_code,
         course_rating=course_rating, prof_name=prof_name, 
-        prof_rating=prof_rating, text=text, time=time, comments=comments) 
+        prof_rating=prof_rating, text=text, time=time, comments=comments, upvotes=upvotes, downvotes=downvotes) 
 
-@app.route('/upvote-post/<postid>', methods=['GET', 'POST'])
+
+@app.route('/vote-post/<postid>/<vote>', methods=['GET', 'POST'])
 #do in the query to make thread safe, same with downvotes ( makes sure there's no duplicate id's check for this in query)
-def post_upvote(postid):
+def post_vote(postid,vote):
     conn = dbi.connect()
-    upvotesDict = queries.get_post_upvotes(conn,postid)
-    if upvotesDict['upvotes'] == None:
-        upvotes = 1
-        queries.update_post_upvotes(conn,postid,upvotes)
-        
-    else:
-        upvotes = upvotesDict['upvotes'] + 1
-        queries.update_post_upvote(conn,postid,upvotes)
+    queries.update_post_votes(conn,postid,vote)
     return redirect(url_for('home'))
 
-@app.route('/downvote-post/<postid>', methods=['GET', 'POST'])
-def post_downvote(postid):
-    conn = dbi.connect()
-    downvotesDict = queries.get_post_downvotes(conn,postid)
-    if downvotesDict['downvotes'] == None:
-        downvotes = 1
-        queries.update_post_downvotes(conn,postid,downvotes)
-        
-    else:
-        downvotes = downvotesDict['downvotes'] + 1
-        queries.update_post_downvotes(conn,postid,downvotes)
-    return redirect(url_for('home'))
 
 @app.route('/comment/<postid>', methods=['GET', 'POST'])
 def comment(postid):
@@ -280,20 +264,12 @@ def comment(postid):
             # go to post page
             return redirect(url_for('view_post', postid=postid))
 
-@app.route('/upvote-comment/<postid>/<commentid>', methods=['GET', 'POST'])
-def comment_upvote(postid,commentid):
-    conn = dbi.connect()
-    upvotes = queries.get_comment_upvotes(conn,commentid)
-    upvotes = upvotes['upvotes'] + 1
-    queries.update_comment_upvotes(conn,commentid,upvotes)
-    return redirect(url_for('view_post', postid=postid))
 
-@app.route('/downvote-comment/<postid>/<commentid>', methods=['GET', 'POST'])
-def comment_downvote(postid,commentid):
+@app.route('/vote-comment/<postid>/<commentid>/<vote>', methods=['GET', 'POST'])
+#do in the query to make thread safe, same with downvotes ( makes sure there's no duplicate id's check for this in query)
+def comment_vote(postid,commentid,vote):
     conn = dbi.connect()
-    downvotes = queries.get_comment_downvotes(conn,commentid)
-    downvotes = downvotes['downvotes'] + 1
-    queries.update_comment_downvotes(conn,commentid,downvotes)
+    queries.update_comment_votes(conn,commentid,vote)
     return redirect(url_for('view_post', postid=postid))
 
         
@@ -319,6 +295,8 @@ def upload():
         prof_rating = request.form['prof-rating']
         course_rating = request.form['course-rating']
         review_text = request.form['review-text']
+        upvotes = 0
+        downvotes = 0
 
         # upload file
         f = request.files['pdf']
@@ -384,13 +362,13 @@ def upload():
         # upload post
         if profid == '':
             postid = queries.add_course_post(conn, time, uid, courseid, 
-            course_rating, review_text, fileid, username)['last_insert_id()']
+            course_rating, review_text, fileid, username, upvotes, downvotes)['last_insert_id()']
         elif courseid == '':
             postid = queries.add_prof_post(conn, time, uid, profid, prof_rating
-            , review_text, fileid, username)['last_insert_id()']
+            , review_text, fileid, username, upvotes, downvotes)['last_insert_id()']
         else:
             postid = queries.add_post(conn, time, uid, courseid, profid, 
-            prof_rating, course_rating, review_text, fileid, username)['last_insert_id()']
+            prof_rating, course_rating, review_text, fileid, username, upvotes, downvotes)['last_insert_id()']
 
         flash('Upload successful')
         # go to post page
@@ -470,7 +448,7 @@ def course(department, course):
         courses = {}
         rating = queries.find_course_avgrating(conn, course)
         posts = queries.get_course_post_allinfo(conn, course)
-        return render_template('course.html', code=course_info['courseid'], course=
+        return render_template('course.html', code=course_info['code'], course=
         course_info['title'], avg_rating=rating,
         departments = departments, courses = courses, 
         professors = professors, posts = posts)
@@ -487,7 +465,7 @@ def course_section(department, professor, course):
         professors = {}
         courses = {}
         posts = queries.get_section_post_allinfo(conn, course, professor)
-        return render_template('course-section.html', code=course_info['courseid'], course=
+        return render_template('course-section.html', code=course_info['code'], course=
         course_info['title'], departments = departments, courses = courses, 
         professors = professors, posts=posts, prof=prof_info['name'])
     if request.method == 'POST':

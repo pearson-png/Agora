@@ -10,8 +10,8 @@
         <h5>Posted by: {{ post.username }} | At: {{ post.time }}</h5>
         <p> {{ post.text }}</p>
         <h3>
-            <a href="{{url_for('post_upvote', postid=post.postid)}}">Upvote: </a> {{ post.upvotes }} | 
-            <a href="{{url_for('post_downvote', postid=post.postid)}}">Downvote: </a> {{ post.downvotes }} 
+            <a href="{{url_for('post_vote', postid=post.postid, vote='up')}}">Upvote: </a> {{ post.upvotes }} | 
+            <a href="{{url_for('post_vote', postid=post.postid, vote='down')}}">Downvote: </a> {{ post.downvotes }} 
         </h3>
     </div>
     
