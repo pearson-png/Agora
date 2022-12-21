@@ -1,7 +1,7 @@
 HTML {
   --color-header: #1a69a9;  /* color for H1-H6 and others. was deepskyblue but poor contrast. */
   --color-hilite: #b50000;  /* was red, but this avoids WAVE contrast errors */ 
-  --color-focus: #479bdf;
+  --color-focus: #dfeffd;
   --font-family: Verdana;
   font-family: var(--font-family)
 }
@@ -10,9 +10,9 @@ HTML {
   }
   
   body {
-    font-family: Arial;
-    padding: 20px;
-    background: #f1f1f1;
+    font-family: "Optima", sans-serif;
+    padding: 0px;
+    background:  #dfeffd;
   }
   
   /* Header */
@@ -22,73 +22,115 @@ HTML {
     text-align: center;
     background: white;
   }
+
+  #messages {
+    background: #1a69a9;
+    color: #ffd900;
+    padding-left: 10px;
+    padding-top: 0.01px;
+    padding-bottom: 0.01px;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  h1{
+    color: var(--color-header);
+  }
   
   /* Left column */
   .leftcolumn { 
+    position:fixed;
     float: left;
-    width: 30%;
+    width: auto;
+    height: auto;
+    margin-top: 10px;
+    border-radius: 5px;
+    padding:20px;
     background-color: #92c9f6;
+    border: 2px solid #b2d8f7;
   }
 
   .rightcolumn{
     float: right;
-    width: 70%;
+    width: 74%;
   }
   
   /* for posts */
   .card {
-    background-color: white;
+    background-color:  #f7fbfd;
     padding: 20px;
     margin-top: 20px;
+    border-radius: 5px;
+    color: var(--color-header);
   }
-/* for a simple navbar.*/
-nav > ul {
-  display: flex;
-  flex-direction: column;
-}
 
-nav ul {
-  list-style-type: none;
-  margin: 0px;
-  padding: 0px;
-  display:inline-block;
-}
+  .filter_title{
+    font-weight: bold;
+    font-size: 30px;
+    color: #1a69a9;
+  }
 
-nav > ul > li {
-  flex: 0 0 auto;
-  width: 15em; 
-  display:inline-block;
-}
+  .formsection{
+    padding-top: 15px;
+    color: #1a69a9
+  }
 
-nav button, nav a {
-  display: block;
-  box-sizing: border-box; /* easier to make button and A the same size */
-  width: 100%;
-  height: 40px;
-  padding: 0px;
-  padding-bottom: 5px;
-  padding-top: 5px;
-  background-color: #92c9f6; /* was #3498db */
-  border: 2px solid black;
-  border-radius: 5px;
-  cursor: pointer;
-  /* Firefox uses font -apple-system unless I repeat the font spec here. */
-  font-family: var(--font-family);
-  font-weight: bold;
-  font-size: 0.8rem;
-}
+  input[type=submit] {
+    background-color: #1e84d8;
+    border: none;
+    color: white;
+    padding: 10px;
+    text-decoration: none;
+    margin: 4px 2px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  /* for a simple navbar.*/
+  nav > ul {
+    display: flex;
+    flex-direction: column;
+  }
 
-/* Only the top-level buttons are centered; lower ones are left-aligned. */
-nav > ul > li > button , nav > ul > li > a {
-  text-align: center;
-}
+  nav ul {
+    list-style-type: none;
+    margin: 0px;
+    padding: 0px;
+    display:inline-block;
+  }
 
-/* because of the margin trick, this can only be used for the last element */
+  nav > ul > li {
+    flex: 0 0 auto;
+    width: 24vw; 
+    display:inline-block;
+  }
 
-nav li.right {
-  margin-left: auto;
-}
+  nav button, nav a {
+    display: block;
+    box-sizing: border-box; /* easier to make button and A the same size */
+    width: 25vw;
+    height: 40px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    background-color: #92c9f6; /* was #3498db */
+    border: 2px solid #b2d8f7;
+    cursor: pointer;
+    /* Firefox uses font -apple-system unless I repeat the font spec here. */
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: var(--color-header);
+  }
 
-nav button:hover, button:focus, nav a:hover, nav a:focus {
-  background-color: var(--color-focus);
-}
+  /* Only the top-level buttons are centered; lower ones are left-aligned. */
+  nav > ul > li > button , nav > ul > li > a {
+    text-align: center;
+  }
+
+  /* because of the margin trick, this can only be used for the last element */
+
+  nav li.right {
+    margin-left: auto;
+  }
+
+  nav button:hover, button:focus, nav a:hover, nav a:focus {
+    background-color: var(--color-focus);
+  }
