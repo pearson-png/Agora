@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block main_content %}
-<p>Matching courses:</p>
+<h2>Matching courses:</h2>
 <article>
     {% for course in course_list %}
     <ul>
@@ -10,8 +10,7 @@
     {% endfor %}
 </article>
 
-<div class="rightcolumn">
-<p>Matching professors:</p>
+<h2>Matching professors:</h2>
 <article>
     {% for professor in professor_list %}
     <ul>
