@@ -37,7 +37,7 @@ app.config['CAS_AFTER_LOGOUT'] = 'my_login'
 
 # upload files
 app.config['UPLOADS'] = 'uploads'
-app.config['MAX_CONTENT_LENGTH'] = 1*1024*1024 # 1 MB
+app.config['MAX_CONTENT_LENGTH'] = 2*1024*1024 # 2 MB
 ALLOWED_EXTENSIONS = {'pdf'}
 
 # create dic for random usernames
@@ -173,12 +173,12 @@ def view_post(postid):
     conn = dbi.connect()
     #query 1 gets all post info, always include these in all posts
     postInfo = queries.get_post_info(conn, postid)
-    
     user = postInfo['username']
     text = postInfo['text']
     time = postInfo['time']
     upvotes = postInfo['upvotes']
     downvotes = postInfo['downvotes']
+    attachments = postInfo['attachments']
 
     #query 2, loads all comments for given post
     comments = queries.get_comments(conn,postid)
@@ -210,18 +210,21 @@ def view_post(postid):
         return render_template('view-post-course.html', postid=postid, 
         user=user, course_name=course_name, 
         course_code=course_code, course_rating=course_rating, text=text,
-        time=time, comments=comments, upvotes=upvotes, downvotes=downvotes)
+        time=time, comments=comments, upvotes=upvotes, downvotes=downvotes,
+        filepath=attachments)
     #if there is no course
     elif course_code == None:
         return render_template('view-post-prof.html', postid=postid, 
         user=user, prof_name=prof_name, prof_rating=prof_rating, text=text,
-        time=time, comments=comments, upvotes=upvotes, downvotes=downvotes)
+        time=time, comments=comments, upvotes=upvotes, downvotes=downvotes,
+        filepath=attachments)
     #if there is a prof and a course
     else:
         return render_template('view-post-prof-course.html', postid=postid,
         user=user, course_name=course_name, course_code=course_code,
         course_rating=course_rating, prof_name=prof_name, 
-        prof_rating=prof_rating, text=text, time=time, comments=comments, upvotes=upvotes, downvotes=downvotes) 
+        prof_rating=prof_rating, text=text, time=time, comments=comments, 
+        upvotes=upvotes, downvotes=downvotes,filepath=attachments) 
 
 
 @app.route('/vote-post/<postid>/<vote>', methods=['GET', 'POST'])
@@ -244,12 +247,39 @@ def comment(postid):
         #retrieve information
         uid = session.get('uid')
         print('uid in comment fxn: ',uid)
-        attachments = None 
         upvotes = 0
         downvotes = 0
         username = queries.username_from_uid(conn, uid)['username']
         time = datetime.now()
         text = request.form['comment-text']
+
+        # upload file
+        f = request.files['pdf']
+        # if a file was submitted and it is a PDF
+        if f and helper.allowed_file(f.filename, ALLOWED_EXTENSIONS):
+            try:
+                user_filename = f.filename
+                # make file name the uid plus the input file name
+                filename = secure_filename('{}'.format(user_filename))
+                print('filename: ',filename)
+                queries.add_file(conn, uid, filename)
+                print('file added to database')
+                filename = queries.add_file(conn, uid, filename)
+                filename = filename['filepath']
+                pathname = os.path.join(app.config['UPLOADS'],filename)
+                print('pathname: ',pathname)
+                f.save(pathname)
+                # print('file added')
+            
+            except Exception as err:
+                flash('File upload failed {why}'.format(why=err))
+                return render_template('comment-form.html', postid=postid)
+        # if a file was submitted and it is not a PDF
+        elif f and not helper.allowed_file(f.filename):
+            flash('File attachment must be a PDF')
+            return render_template('comment-form.html', postid=postid)
+        else:
+            filename = None
 
          # check if essential information is present (text)
         if text == "":
@@ -258,7 +288,7 @@ def comment(postid):
         # upload comment
         else:
             commentid = queries.add_comment(conn, postid, time, uid, text, 
-            attachments, upvotes, downvotes, username)
+            filename, upvotes, downvotes, username)
             flash('Comment upload successful')
             # go to post page
             return redirect(url_for('view_post', postid=postid))
@@ -306,14 +336,16 @@ def upload():
             try:
                 user_filename = f.filename
                 # make file name the uid plus the input file name
-                filename = secure_filename('{}_{}'.format(uid, user_filename))
+                filename = secure_filename('{}'.format(user_filename))
                 print('filename: ',filename)
+                queries.add_file(conn, uid, filename)
+                print('file added to database')
+                filename = queries.add_file(conn, uid, filename)
+                filename = filename['filepath']
                 pathname = os.path.join(app.config['UPLOADS'],filename)
                 print('pathname: ',pathname)
                 f.save(pathname)
-                fileid = queries.add_file(conn, uid, filename)
-                print('file added')
-                fileid = fileid['last_insert_id()']
+                # print('file added')
             
             except Exception as err:
                 flash('File upload failed {why}'.format(why=err))
@@ -328,7 +360,7 @@ def upload():
                                     professors = professors, courses = courses,
                                     departments = departments)
         else:
-            fileid = None
+            filename = None
 
         # check if essential information is present
         if dept == "":
@@ -363,23 +395,26 @@ def upload():
         # upload post
         if profid == '':
             postid = queries.add_course_post(conn, time, uid, courseid, 
-            course_rating, review_text, fileid, username, upvotes, downvotes)['last_insert_id()']
+            course_rating, review_text, filename, username, upvotes, 
+            downvotes)['last_insert_id()']
         elif courseid == '':
             postid = queries.add_prof_post(conn, time, uid, profid, prof_rating
-            , review_text, fileid, username, upvotes, downvotes)['last_insert_id()']
+            , review_text, filename, username, upvotes, 
+            downvotes)['last_insert_id()']
         else:
             postid = queries.add_post(conn, time, uid, courseid, profid, 
-            prof_rating, course_rating, review_text, fileid, username, upvotes, downvotes)['last_insert_id()']
+            prof_rating, course_rating, review_text, filename, username, 
+            upvotes, downvotes)['last_insert_id()']
 
         flash('Upload successful')
         # go to post page
         return redirect(url_for('view_post', postid=postid))
 
-@app.route('/view-file/<path:filename>')
-def view_file(filename):
+@app.route('/view-file/<path:filepath>')
+def view_file(filepath):
     if not session.get('uid'):
         return redirect(url_for('my_login'))
-    return send_from_directory(app.config['UPLOADS'], filename)
+    return send_from_directory(app.config['UPLOADS'], filepath)
 
 @app.route('/update_upload_form')
 def update_upload_form():
@@ -476,9 +511,10 @@ def course_section(department, professor, course):
         professors = {}
         courses = {}
         posts = queries.get_section_post_allinfo(conn, course, professor)
-        return render_template('course-section.html', code=course_info['code'], course=
-        course_info['title'], departments = departments, courses = courses, 
-        professors = professors, posts=posts, prof=prof_info['name'])
+        return render_template('course-section.html', code=course_info['code'], 
+        course=course_info['title'], departments = departments, 
+        courses = courses, professors = professors, posts=posts, 
+        prof=prof_info['name'])
     if request.method == 'POST':
         return helper.postFilterForm(conn, request.form)
 

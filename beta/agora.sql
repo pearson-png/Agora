@@ -95,7 +95,7 @@ CREATE TABLE `users` (
 
 CREATE TABLE `documents` (
   `docid` int auto_increment PRIMARY KEY,
-  `filepath` varchar(100) not null,
+  `filepath` varchar(100),
   `uid` int
 );
 

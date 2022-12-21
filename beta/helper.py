@@ -30,6 +30,7 @@ def read_txt(file_name):
     return word_list
 
 def allowed_file(filename, extensions):
+    '''Checks file extension allowed for upload'''
     return '.' in filename and \
         filename.rsplit('.', 1)[1].lower() in extensions
 

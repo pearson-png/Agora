@@ -162,11 +162,12 @@ def find_courses(conn):
 
 
 def get_post_info(conn,postid):
-    '''Returns username, text and timestamp, upvotes, downvotes from a specific post '''
+    '''Returns username, text and timestamp, upvotes, downvotes, and 
+    attachments from a specific post'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
-    select username, text, time, upvotes, downvotes
-    from posts 
+    select username, text, time, upvotes, downvotes, attachments
+    from posts
     where postid = %s''', [postid])
     return curs.fetchone()
 
@@ -471,9 +472,31 @@ def add_file(conn, uid, filename):
     '''
     Enters a user-uploaded file into the database.
     '''
-    sql = '''insert into documents(filepath, uid) values (%s, %s)'''
+    sql = '''insert into documents(uid) values (%s)'''
     curs = dbi.dict_cursor(conn)
-    curs.execute(sql, [filename, uid])
+    curs.execute(sql, [uid])
     conn.commit()
     curs.execute('''select last_insert_id() from documents''')
+    id = curs.fetchone()
+    id = id['last_insert_id()']
+    new_filename = '{}_{}'.format(id, filename)
+    curs.execute('''update documents
+    set filepath=%s
+    where docid=%s''', [new_filename, id])
+    conn.commit()
+    # get updated filepath
+    curs.execute('''select *
+    from documents
+    where docid = %s''', [id])
+    return curs.fetchone()
+
+
+def get_filepath(conn, fileid):
+    '''
+    Given the fileid, returns the file path.
+    '''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''select filepath
+    from documents
+    where docid = %s''', [fileid])
     return curs.fetchone()
