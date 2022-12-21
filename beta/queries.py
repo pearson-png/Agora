@@ -9,11 +9,19 @@ def get_recent_post_allinfo(conn):
         prof name, prof rating, from recent posts'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
-        select postid,username, text, time, code
-        title, course_rating, name, prof_rating, upvotes, downvotes
-        from posts 
-        inner join courses on posts.course=courses.courseid
-        inner join professors on posts.prof=professors.pid
+        SELECT X.postid, X.username, X.text, X.time, Y.code,
+        Y.title, X.course_rating, Z.name, X.prof_rating,
+        X.upvotes, X.downvotes
+        from ( 
+            (SELECT postid, username, text, time, upvotes, downvotes,
+                course, prof, prof_rating,course_rating FROM posts) X
+            LEFT OUTER JOIN
+            (SELECT code, title, courseid FROM courses) Y 
+            on X.course=Y.courseid
+            LEFT OUTER JOIN
+            (SELECT name, pid FROM professors) Z
+            on X.prof=Z.pid
+            )
         order by time desc limit 50''')
     return curs.fetchall()
 
