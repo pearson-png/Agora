@@ -17,6 +17,70 @@ def get_recent_post_allinfo(conn):
         order by time desc limit 50''')
     return curs.fetchall()
 
+def get_dept_post_allinfo(conn, department):
+    '''Returns postid, username, text, timestamp, 
+        course code, course title, course rating
+        prof name, prof rating, from matching dept posts'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+        select postid,username, text, time, code
+        title, course_rating, name, prof_rating, upvotes, downvotes
+        from posts 
+        inner join courses on posts.course=courses.courseid
+        inner join professors on posts.prof=professors.pid
+        where courses.dept = %s
+        order by time desc 
+        limit 50''', [department])
+    return curs.fetchall()
+
+def get_prof_post_allinfo(conn, professor):
+    '''Returns postid, username, text, timestamp, 
+        course code, course title, course rating
+        prof name, prof rating, from matching prof posts'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+        select postid,username, text, time, code
+        title, course_rating, name, prof_rating, upvotes, downvotes
+        from posts 
+        inner join courses on posts.course=courses.courseid
+        inner join professors on posts.prof=professors.pid
+        where professors.pid = %s
+        order by time desc 
+        limit 50''', [professor])
+    return curs.fetchall()
+
+def get_course_post_allinfo(conn, course):
+    '''Returns postid, username, text, timestamp, 
+        course code, course title, course rating
+        prof name, prof rating, from matching prof posts'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+        select postid,username, text, time, code
+        title, course_rating, name, prof_rating, upvotes, downvotes
+        from posts 
+        inner join courses on posts.course=courses.courseid
+        inner join professors on posts.prof=professors.pid
+        where courses.courseid = %s
+        order by time desc 
+        limit 50''', [course])
+    return curs.fetchall()
+
+def get_section_post_allinfo(conn, course, professor):
+    '''Returns postid, username, text, timestamp, 
+        course code, course title, course rating
+        prof name, prof rating, from matching prof and course posts'''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+        select postid,username, text, time, code
+        title, course_rating, name, prof_rating, upvotes, downvotes
+        from posts 
+        inner join courses on posts.course=courses.courseid
+        inner join professors on posts.prof=professors.pid
+        where courses.courseid = %s and professors.pid = %s
+        order by time desc 
+        limit 50''', [course, professor])
+    return curs.fetchall()
+
 def find_depts(conn):
     '''Returns a list of dictionaries of all departments'''
     curs = dbi.dict_cursor(conn)
@@ -86,12 +150,12 @@ def get_prof_info(conn,postid):
     where postid = %s''', [postid]) 
     return curs.fetchone()
 
-def find_prof_name(conn, department,pid):
-    '''Returns name of professor with given department and pid'''
+def find_prof_name(conn,pid):
+    '''Returns name of professor with given pid'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''select name 
                     from professors 
-                    where dept=%s and pid=%s''', [department,pid])
+                    where pid=%s''', [pid])
     #returns one matching name
     return curs.fetchone()
 
@@ -143,11 +207,11 @@ def find_dept_name(conn, dept):
                     where abbrv=%s""", [dept]) 
     return curs.fetchone()
 
-def find_course_info(conn, department,courseid):
-    '''Returns info of course with given department and course id'''
+def find_course_info(conn,courseid):
+    '''Returns info of course with given course id'''
     curs = dbi.dict_cursor(conn)
     curs.execute('''select * from courses 
-                    where dept=%s and courseid=%s''', [department,courseid])
+                    where courseid=%s''', [courseid])
     return curs.fetchone()
 
 def find_prof_posts(conn, pid):
