@@ -33,7 +33,7 @@ app.config['CAS_LOGIN_ROUTE'] = '/module.php/casserver/cas.php/login'
 app.config['CAS_LOGOUT_ROUTE'] = '/module.php/casserver/cas.php/logout'
 app.config['CAS_VALIDATE_ROUTE'] = '/module.php/casserver/serviceValidate.php'
 app.config['CAS_AFTER_LOGIN'] = 'after_login'
-app.config['CAS_AFTER_LOGOUT'] = 'logout'
+app.config['CAS_AFTER_LOGOUT'] = 'my_login'
 
 # upload files
 app.config['UPLOADS'] = 'uploads'
@@ -49,9 +49,7 @@ usernames_dict = {}
 def home():
     # look at uid in session specifically
     # check if logged in for all routes
-    uid = session.get('uid')
-    if not uid:
-        print(session.get('uid'))
+    if not session.get('uid'):
         return redirect(url_for('my_login'))
 
     # uid = session.get('uid')
@@ -70,6 +68,8 @@ def home():
 
 @app.route('/search/<department>/<query>', methods=['GET'])
 def search(department, query):
+    if not session.get('uid'):
+        return redirect(url_for('my_login'))
     #search the course or professor with names that match the entered query
     conn = dbi.connect()
     course_list = queries.search_course(conn, department, query)
@@ -127,10 +127,9 @@ def after_login():
     try: 
         uid_dic = queries.check_user_registration(conn, email) 
         uid = uid_dic['uid']
-        print('uid: ',uid)
+
     except TypeError:
         uid = None
-        print('uid: ',uid)
     
     # print('uid: ',uid)
     
@@ -161,11 +160,12 @@ def after_login():
         session['uid'] = uid
         return redirect(url_for('home'))
 
-@app.route('/logout/')
-def logout():
+@app.route('/my_logout/')
+def my_logout():
     flash('You have been logged out.')
-    # return redirect(url_for('cas.login'))
+    session['uid'] = None
     return redirect(url_for('my_login'))
+
 
 @app.route('/view/<postid>', methods=['GET'])
 #view individual posts
@@ -234,11 +234,10 @@ def post_vote(postid,vote):
 
 @app.route('/comment/<postid>', methods=['GET', 'POST'])
 def comment(postid):
+    if not session.get('uid'):
+        return redirect(url_for('my_login'))
     conn = dbi.connect()
     if request.method == 'GET':
-
-        ### TO DO: Check if user is logged in and get their user id
-        # for now assign random user
         return render_template('comment-form.html', postid=postid)
 
     else : # request.method == 'POST'
@@ -275,6 +274,8 @@ def comment_vote(postid,commentid,vote):
         
 @app.route('/upload/', methods=['GET','POST'])
 def upload():
+    if not session.get('uid'):
+        return redirect(url_for('my_login'))
     conn = dbi.connect()
     uid = session.get('uid')
     professors = {}
@@ -376,6 +377,8 @@ def upload():
 
 @app.route('/view-file/<path:filename>')
 def view_file(filename):
+    if not session.get('uid'):
+        return redirect(url_for('my_login'))
     return send_from_directory(app.config['UPLOADS'], filename)
 
 @app.route('/update_upload_form')
@@ -405,6 +408,8 @@ def update_upload_form():
 
 @app.route('/<department>')
 def department(department):
+    if not session.get('uid'):
+        return redirect(url_for('my_login'))
     conn = dbi.connect()
     if request.method == 'GET':
         dept_name = queries.find_dept_name(conn, department)
@@ -422,6 +427,8 @@ def department(department):
 
 @app.route('/professor/<department>/<professor>')
 def professor(department, professor):
+    if not session.get('uid'):
+        return redirect(url_for('my_login'))
     conn = dbi.connect()
     if request.method == 'GET':
         name = queries.find_prof_name(conn,professor)
@@ -440,6 +447,8 @@ def professor(department, professor):
 
 @app.route('/course/<department>/<course>')
 def course(department, course):
+    if not session.get('uid'):
+        return redirect(url_for('my_login'))
     conn = dbi.connect()
     if request.method == 'GET':
         course_info = queries.find_course_info(conn,course)
@@ -457,6 +466,8 @@ def course(department, course):
 
 @app.route('/course-section/<department>/<professor>/<course>')
 def course_section(department, professor, course):
+    if not session.get('uid'):
+        return redirect(url_for('my_login'))
     conn = dbi.connect()
     if request.method == 'GET':
         course_info = queries.find_course_info(conn,course)
@@ -473,6 +484,8 @@ def course_section(department, professor, course):
 
 @app.route('/change-username', methods=['GET','POST'])
 def change_username():
+    if not session.get('uid'):
+        return redirect(url_for('my_login'))
     conn = dbi.connect()
     #get uid
     uid = session.get('uid')
