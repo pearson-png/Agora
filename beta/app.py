@@ -60,7 +60,7 @@ def home():
         professors = {}
         courses = {}
         posts = queries.get_recent_post_allinfo(conn)
-        return render_template('home_page.html',page_title='Hello', 
+        return render_template('home_page.html',page_title='Welcome to Agora!', 
         departments = departments, courses = courses, 
         professors = professors, posts = posts)
     if request.method == 'POST':
