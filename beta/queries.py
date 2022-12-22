@@ -121,7 +121,7 @@ def get_section_post_allinfo(conn, course, professor):
             (SELECT name, pid FROM professors) Z
             on X.prof=Z.pid
             )
-        where Y.courseid = %s and professors.pid = %s
+        where Y.courseid = %s and Z.pid = %s
         order by time desc 
         limit 50''', [course, professor])
     return curs.fetchall()
