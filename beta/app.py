@@ -250,7 +250,7 @@ def post_vote(postid,vote):
     conn = dbi.connect()
     user = session.get('uid')
     queries.update_post_votes(conn,postid,vote,user)
-    return redirect(url_for('home'))
+    return redirect(url_for('view_post',postid=postid))
 
 
 @app.route('/comment/<postid>', methods=['GET', 'POST'])

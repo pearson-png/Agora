@@ -7,7 +7,7 @@
 <div class="card"> 
     <h1> <a href="{{url_for('view_post', postid = post.postid)}}">View Post</a> </h1>
     <h2>Professor: {{ post.name }} | Rating: {{ post.prof_rating }} </h2>
-    <h2>Course: {{ post.title }} | Rating: {{ post.course_rating}} </h2>
+    <h2>Course: {{ post.code }} - {{ post.title }} | Rating: {{ post.course_rating}} </h2>
     <h5>Posted by: {{ post.username }} | At: {{ post.time }}</h5>
     <p> {{ post.text }}</p>
         <button class="upvote" data-postid="{{post.postid}}" class="btn btn-primary" type="button">Upvote</button> <strong id="{{post.postid}}upvote">{{ post.upvotes }} |</strong>
