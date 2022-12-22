@@ -396,6 +396,17 @@ def get_comments(conn, postid):
         order by time asc''', [postid])
     return curs.fetchall()
 
+def get_vote_count(conn, postid, votes):
+    '''Returns a dictionary of vote count for the given post
+    and vote type'''
+    curs = dbi.dict_cursor(conn)
+    if votes == 'up':
+            curs.execute('''select upvotes from posts
+                            where postid = %s''', [postid])
+    if votes == 'down':
+            curs.execute('''select downvotes from posts
+                            where postid = %s''', [postid])
+    return curs.fetchone()
 
 def update_post_votes(conn,postid,votes,user):
     '''Updates posts table to modify votes for post with postid'''

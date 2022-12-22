@@ -22,6 +22,40 @@
                     $('#course').html(data.html_string2);
                })
         });
+        $('.upvote').click(function(){
+          var id;
+          id = $(this).attr("data-postid");
+          $.ajax({
+            data: {
+              postid : id,
+              vote : 'up'
+            },
+            type: 'POST',
+            url: '/vote-ajax'
+          })
+          .done(function(data){
+            var postid = data.postid;
+            console.log(postid)
+            $('#' + postid + 'upvote').html(data.html_string);
+          });
+        })
+        $('.downvote').click(function(){
+          var id;
+          id = $(this).attr("data-postid");
+          $.ajax({
+            data: {
+              postid : id,
+              vote : 'down'
+            },
+            type: 'POST',
+            url: '/vote-ajax'
+          })
+          .done(function(data){
+            var postid = data.postid;
+            console.log(postid)
+            $('#' + postid + 'downvote').html(data.html_string);
+          });
+        })
         $("#process_input").on("click", function (event) { 
           $.ajax({
               data : {

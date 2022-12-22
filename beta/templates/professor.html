@@ -13,10 +13,8 @@
     {% if post.attachments %}
         <p>Attachment: {{ post.attachments }}</p>
     {% endif %}
-    <h3>
-        <a href="{{url_for('post_vote', postid=post.postid, vote='up')}}">Upvote: </a> {{ post.upvotes }} | 
-        <a href="{{url_for('post_vote', postid=post.postid, vote='down')}}">Downvote: </a> {{ post.downvotes }} 
-    </h3>
+    <button class="upvote" data-postid="{{post.postid}}" class="btn btn-primary" type="button">Upvote</button> <strong id="{{post.postid}}upvote">{{ post.upvotes }} |</strong>
+    <button class="downvote" data-postid="{{post.postid}}" class="btn btn-primary" type="button">Downvote</button> <strong id="{{post.postid}}downvote">{{ post.downvotes }} |</strong>
 </div>
 {% endfor %}
 {% endblock %}

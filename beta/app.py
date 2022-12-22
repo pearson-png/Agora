@@ -66,6 +66,24 @@ def home():
     if request.method == 'POST':
         return helper.postFilterForm(conn, request.form)
 
+@app.route('/vote-ajax', methods = ['POST'])
+def vote_ajax():
+    conn = dbi.connect()
+    postid = request.form['postid']
+    print(postid)
+    vote = request.form['vote']
+    print(vote)
+    user = session.get('uid')
+    queries.update_post_votes(conn,postid,vote,user)
+    votes = queries.get_vote_count(conn, postid, vote)
+    print(votes)
+    if vote == "up":
+        s = '<strong id="upvote-count">{} |</strong>'.format(votes['upvotes'])
+    if vote == "down":
+        s = '<strong id="downvote-count">{} |</strong>'.format(votes['downvotes'])
+    return jsonify(html_string = s, postid = postid)
+
+
 @app.route('/search/<department>/<query>', methods=['GET'])
 def search(department, query):
     if not session.get('uid'):
